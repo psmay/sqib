@@ -1,0 +1,96 @@
+Sqib
+====
+
+Synopsis
+--------
+
+    -- Get a Sqib sequence
+
+    -- From parameters (preserves trailing nils)
+    local seq = Sqib:over(2, 4, 6, 8, 10, 12)
+
+    -- From a packed list (preserves trailing nils)
+    local seq = Sqib:from_packed({ n=6, 2, 4, 6, 8, 10, 12 })
+    -- From array (discards trailing nils)
+    local seq = Sqib:from_array({ 2, 4, 6, 8, 10, 12 })
+    -- From an existing iterate function (NB: Each iteration should return i, v)
+    local seq = Sqib:from_iterate(function() return ipairs({ 2, 4, 6, 8, 10, 12 }) end)
+
+    -- If it's an object that `Sqib:from()` knows how to detect, you can use it instead
+    local seq = Sqib:from({ n=6, 2, 4, 6, 8, 10, 12 })
+    local seq = Sqib:from({ 2, 4, 6, 8, 10, 12 })
+    local seq = Sqib:from(function() return ipairs({ 2, 4, 6, 8, 10, 12 }) end)
+
+    -- Apply operations fluently
+    local result_seq = seq
+        :map(function(n) return n / 2 end)
+        :filter(function(n) return n % 2 != 0 end)
+
+    -- Get the result as an array
+    local result_array = result_seq:to_array()
+
+    -- Or as a packed list
+    local result_packed = result_seq:pack()
+
+    -- Or iterate over the result directly
+    for i, v in result_seq:iterate() do
+        do_something(i, v)
+    end
+
+    -- Do a bunch of the above without intermediate variables
+    local result_packed = Sqib
+        :over(2, 4, 6, 8, 10, 12)
+        :map(function(n) return n / 2 end)
+        :filter(function(n) return n % 2 end)
+        :pack()
+
+Notes
+-----
+
+This library is for doing fluent things with sequences (in a similar fashion to Scala's `scala.collection.Seq`, .NET's `IEnumerable`, and so forth).
+
+Where, for instance, [one functional library](http://lua-users.org/wiki/FunctionalLibrary) might operate on a sequence using awkwardly nested calls,
+
+Sqib wraps the sequence in an object and allows operations to be defined fluently, in the intuitive order. Then, a final operation is used to convert the sequence into something useful (an array, an iterator, etc.).
+
+Most operations are deferred, meaning that they are not applied until the sequence is actually iterated. This means deeper call stacks but fewer intermediate arrays.
+
+You might use this library if you want to do functional things with sequences and:
+
+*   You don't want to deal with extra dependencies
+*   You want to be able to drop a file in instead of dealing with the proper package manager
+*   You want to treat nil as a real value
+*   You want to apply mapping and filtering without modifying the original sequence
+*   You value deferred rather than instant execution
+
+If you're operating in a more serious or complete Lua environment, there are no doubt other libraries you should be using instead of this one.
+
+Users are warned that:
+
+*   I'm a developer (and a big fan of LINQ, if it wasn't obvious) but I'm not a Lua expert, so I'm learning as I go and some of this code won't be as idiomatic as it should.
+*   The code in its current state scratches the proverbial itch it was intended to address, so maintenance or improvements by me are likely to be sporadic at best. Likewise, I don't have much reason to try to package and submit this module to e.g. LuaRocks.
+    *   If you like this lib enough that you are willing to improve it, package it, and/or maintain it, you absolutely have my blessing to fork the repo. Drop me a line or a pull request if you do; I'd be curious to see it.
+*   I've run all the code through the `vscode-lua` formatter. I acknowledge that some of its ideas are baffling and probably un-idiomatic, but at least they're consistent, and I don't have to worry about whether some commas have spaces after them while others don't.
+    *   If you know a better-looking alternative, please suggest it.
+*   (My version of) this module targets Lua 5.1 and nothing older or newer.
+    *   My present Lua coding efforts are in the service of developing a theme for StepMania, which is currently still based on Lua 5.1.
+
+Name
+----
+
+Sqib unofficially stands for "**S**equence **q**uery l**ib**rary".
+
+Sqib also unofficially stands for "**S**equence **q**uery for **i**mpatient <s>**b**as</s><ins>fools</ins>".
+
+Copyright/License
+-----------------
+
+Sqib, a sequence query facility for Lua
+
+Copyright © 2020 psmay
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
