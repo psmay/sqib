@@ -870,12 +870,12 @@ do
   --
   -- * `by`: A function `(v)` that returns a value that will be the subject of the sort. If omitted, the sort will be
   -- performed on the value itself.
-  -- * `compare`: A ternary compare function `(a, b)` that returns -1 if `a` comes before `b`, 1 if `a` comes after `b`,
-  -- or 0 if `a` and `b` are tied. As a backward compatibility measure, if this method returns a non-number value, it
-  -- will be treated as an ordinary Lua comparer (returns truthy if `a` comes before `b` or falsy otherwise), but if
-  -- `stable` is set to true or if multiple orderings are specified, then the comparer may need to be called twice (once
-  -- in each order) to determine whether two elements are tied. If omitted, the comparison is equivalent to the
-  -- expression `(a < b) and -1 or (a > b) and 1 or 0`.
+  -- * `compare`: A ternary compare function `(a, b)` that returns a negative number if `a` comes before `b`, a positive
+  -- number if `a` comes after `b`, or 0 if `a` and `b` are tied. As a backward compatibility measure, if this method
+  -- returns a non-number value, it will be treated as an ordinary Lua comparer (returns truthy if `a` comes before `b`
+  -- or falsy otherwise), but if `stable` is set to true or if multiple orderings are specified, then the comparer may
+  -- need to be called twice (once in each order) to determine whether two elements are tied. If omitted, the comparison
+  -- is equivalent to the expression `(a < b) and -1 or (a > b) and 1 or 0`.
   -- * `ascending`: If true, the elements are arranged in ascending order. If false, the elements are arranged in
   -- descending order. If omitted, defaults to true.
   -- * `stable`: If true, the sort is stable; that is, any two elements that are tied will be sorted in the same order
