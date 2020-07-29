@@ -1488,6 +1488,56 @@ describe(
 )
 
 describe(
+  "Seq:reversed()",
+  function()
+    it(
+      "reverses the sequence as given",
+      function()
+        assert.same(dump_params(), dump_sqib(Sqib:empty():reversed()))
+        assert.same(dump_params("q"), dump_sqib(Sqib:over("q"):reversed()))
+        assert.same(dump_params("e", "w", "q"), dump_sqib(Sqib:over("q", "w", "e"):reversed()))
+        assert.same(dump_params("r", "e", "w", "q"), dump_sqib(Sqib:over("q", "w", "e", "r"):reversed()))
+        assert.same(dump_params("t", "r", "e", "w", "q"), dump_sqib(Sqib:over("q", "w", "e", "r", "t"):reversed()))
+        assert.same(
+          dump_params(nil, "t", "r", "e", "w", "q"),
+          dump_sqib(Sqib:over("q", "w", "e", "r", "t", nil):reversed())
+        )
+        assert.same(
+          dump_params(nil, "t", nil, nil, nil, "q", nil),
+          dump_sqib(Sqib:over(nil, "q", nil, nil, nil, "t", nil):reversed())
+        )
+      end
+    )
+    it(
+      "refrains from iterating source until iteration",
+      function()
+        local selector_was_called = false
+
+        local seq =
+          Sqib:range(1, 5):map(
+          function(v)
+            selector_was_called = true
+            return v
+          end
+        ):reversed()
+
+        assert.False(selector_was_called)
+        local iterator = seq:iterate()
+        assert.True(selector_was_called)
+        assert.same(
+          dump_params(5, 4, 3, 2, 1),
+          dump_iter(
+            function()
+              return iterator
+            end
+          )
+        )
+      end
+    )
+  end
+)
+
+describe(
   "Seq:skip()",
   function()
     local source_seq = Sqib:over("q", "w", "e", "r", "t", "y", "u", "i", "o", "p")
@@ -1905,7 +1955,7 @@ describe(
 )
 
 describe(
-  "Seq:to_array()",
+  "Seq:to_array() (no include_length param)",
   function()
     it(
       "copies sequence to an array",
@@ -1913,6 +1963,23 @@ describe(
         assert.same({"q", "w", "e"}, Sqib:over("q", "w", "e"):to_array())
         assert.same({true, nil, false, nil, true, nil}, Sqib:over(true, nil, false, nil, true, nil):to_array())
         assert.same({}, Sqib:empty():to_array())
+      end
+    )
+  end
+)
+
+describe(
+  "Seq:to_array() (include_length param set true)",
+  function()
+    it(
+      "copies sequence to an array and includes length",
+      function()
+        assert.same({{"q", "w", "e"}, 3}, {Sqib:over("q", "w", "e"):to_array(true)})
+        assert.same(
+          {{true, nil, false, nil, true, nil}, 6},
+          {Sqib:over(true, nil, false, nil, true, nil):to_array(true)}
+        )
+        assert.same({{}, 0}, {Sqib:empty():to_array(true)})
       end
     )
   end
