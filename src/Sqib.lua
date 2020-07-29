@@ -140,14 +140,6 @@ local function ntxpairs(t)
 end
 
 --
---
---
-
---- Static methods for creating Sqib sequences.
---
--- @type Sqib
-
---
 -- Utility local functions
 --
 
@@ -300,9 +292,9 @@ local function seq_from_packed(t)
   )
 end
 
+--- Static methods for creating Sqib sequences.
 --
--- Sqib methods
---
+-- @type Sqib
 
 do
   -- This is lazy so that it can appear before Sqib.Seq:new() is defined.
@@ -518,11 +510,10 @@ function Sqib:times(value, count)
   end
 end
 
---
--- Sqib.Seq methods
---
-
 --- The abstract base class for Sqib sequences.
+--
+-- Derived classes must implement `Sqib.Seq:iterate`. If a derived class can determine its own size in less-than-linear
+-- time, it should also override `Sqib.Seq:count`.
 --
 -- @type Sqib.Seq
 
