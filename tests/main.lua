@@ -1823,6 +1823,41 @@ describe(
         assert.same(dump_array(by_natural), dump_sqib(seq))
       end
     )
+    it(
+      "handles compare correctly if some compare results are nil and others aren't (bugfix)",
+      function()
+        local seq =
+          Sqib:over(
+          {x = "q", z = 10},
+          {x = "w", z = 10},
+          {x = "e"},
+          {x = "r", z = 20},
+          {x = "t", z = 5},
+          {x = "y"},
+          {x = "u", z = 5}
+        ):sorted {
+          by = function(v)
+            return v.z
+          end,
+          compare = function(a, b)
+            if a == nil then
+              return b == nil and 0 or -1
+            elseif b == nil then
+              return 1
+            else
+              return (a < b) and -1 or (a > b) and 1 or 0
+            end
+          end,
+          stable = true
+        }:map(
+          function(v)
+            return v.x
+          end
+        )
+
+        assert.same(dump_params("e", "y", "t", "u", "q", "w", "r"), dump_sqib(seq))
+      end
+    )
   end
 )
 

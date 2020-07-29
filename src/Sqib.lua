@@ -55,7 +55,11 @@ end
 
 -- unescape a nil-escaped value
 local function _nt_unescape(ev)
-  return ev == _NT_NIL_SURROGATE and nil or ev
+  if ev == _NT_NIL_SURROGATE then
+    return nil
+  else
+    return ev
+  end
 end
 
 -- unescape a nil-escaped value, returning true, value if defined or false, nil if undefined
