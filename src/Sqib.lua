@@ -241,6 +241,9 @@ end
 -- Converts the first `n` elements of `a` to `Sqib.Seq` using `try_seq_from()`, raising an error if any element fails to
 -- convert. Returns the concatenation of the results as a `Sqib.Seq`.
 local function seq_from_all(a, n)
+  if type(n) ~= "number" then
+    error("Sequence concatenation failed; parameter count is type " .. type(n) .. "; expected number")
+  end
   if n <= 0 then
     return Sqib:empty()
   end
@@ -415,10 +418,10 @@ function Sqib:from_values(t)
   )
 end
 
---- Produces a `Sqib.Seq` by converting each parameter to a `Sqib.Seq` (using the same rules as `Sqib:from()`) and
--- concatenating the results.
+--- Produces a `Sqib.Seq` by converting each parameter to a `Sqib.Seq` and concatenating the results.
 --
--- @param ... Sequence-like values to be converted to sequences and concatenated.
+-- @param ... Sequence-like values to be converted to sequences (using the same rules as `Sqib:from()`) and
+-- concatenated.
 -- @return A `Sqib.Seq` obtained by automatically converting every parameter to a `Sqib.Seq`, then concatenating the
 -- results.
 -- @raise * When any parameter has no automatic conversion to a sequence.
@@ -561,6 +564,37 @@ function Sqib.Seq:new(o)
   setmetatable(o, self)
   self.__index = self
   return o
+end
+
+--- Produces a `Sqib.Seq` consisting of this sequence followed by the specified elements.
+--
+-- @param ... Elements to append to this sequence.
+-- @return A `Sqib.Seq` consisting of the elements of this sequence followed by the specified additional elements.
+function Sqib.Seq:append(...)
+  local n = select("#", ...)
+  if n == 0 then
+    return self
+  else
+    return seq_from_all({self, Sqib:over(...)}, 2)
+  end
+end
+
+--- Returns a `Sqib.Seq` consisting of this sequence followed by the specified additional sequences.
+--
+-- @param ... Sequence-like values to be converted to sequences (using the same rules as `Sqib:from()`) and concatenated
+-- to this sequence.
+-- @return A `Sqib.Seq` consisting of the elements of this sequence followed by the elements of each of the specified
+-- additional sequences.
+-- @raise * When any parameter has no automatic conversion to a sequence.
+-- * When, for any parameter `v`, `v:to_sqib_seq()` is found but returns a value that does not appear to be a sequence
+-- (i.e., does not pass the `is_sqib_seq()` test).
+function Sqib.Seq:concat(...)
+  local n = select("#", ...)
+  if n == 0 then
+    return self
+  else
+    return seq_from_all({self, ...}, n + 1)
+  end
 end
 
 --- Counts the number of elements, or the number of elements that satisfy a predicate, in this `Sqib.Seq`.

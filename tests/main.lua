@@ -1209,6 +1209,50 @@ describe(
 --
 
 describe(
+  "Seq:append()",
+  function()
+    it(
+      "appends individual elements to sequences",
+      function()
+        assert.same(
+          dump_params("q", "w", "e", "r", "t", "y"),
+          dump_sqib(Sqib:over("q", "w", "e"):append("r", "t", "y"))
+        )
+        assert.same(dump_params(), dump_sqib(Sqib:empty():append()))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:empty():append("q", "w", "e")))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:over("q", "w", "e"):append()))
+      end
+    )
+  end
+)
+
+describe(
+  "Seq:concat()",
+  function()
+    it(
+      "concatenates sequences",
+      function()
+        assert.same(
+          dump_params("q", "w", "e", "r", "t", "y"),
+          dump_sqib(Sqib:over("q", "w", "e"):concat(Sqib:over("r", "t", "y")))
+        )
+        assert.same(dump_params(), dump_sqib(Sqib:empty():concat(Sqib:empty())))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:empty():concat(Sqib:over("q", "w", "e"))))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:over("q", "w", "e"):concat()))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:over("q", "w", "e"):concat(Sqib:empty())))
+      end
+    )
+    it(
+      "concatenates sequences to themselves",
+      function()
+        local seq = Sqib:over("q", "w", "e")
+        assert.same(dump_params("q", "w", "e", "q", "w", "e", "q", "w", "e"), dump_sqib(seq:concat(seq, seq)))
+      end
+    )
+  end
+)
+
+describe(
   "Seq:count()",
   function()
     it(
