@@ -1227,6 +1227,28 @@ describe(
 )
 
 describe(
+  "Seq:call()",
+  function()
+    it(
+      "runs the doc example correctly",
+      function()
+        local function my_every_n(seq, n)
+          return seq:filter(
+            function(_, i)
+              return i % n == 0
+            end
+          )
+        end
+
+        local seq = Sqib:over(1, 2, 3, 4, 5, 6, 7, 8, 9, 10):call(my_every_n, 3)
+
+        assert.same(dump_params(3, 6, 9), dump_sqib(seq))
+      end
+    )
+  end
+)
+
+describe(
   "Seq:concat()",
   function()
     it(
@@ -2167,4 +2189,3 @@ describe(
     )
   end
 )
-

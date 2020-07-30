@@ -593,6 +593,27 @@ function Sqib.Seq:append(...)
   end
 end
 
+--- Calls the specified function as if it were a method on this sequence.
+--
+-- This is a simple way to call custom sequence operations fluently without assigning them directly to to `Sqib.Seq` table.
+--
+--     function my_every_n(seq, n)
+--       return seq:filter(function(_,i) return i % n == 0 end)
+--     end
+--
+--    -- Use call
+--    local seq = Sqib
+--      :over(1,2,3,4,5,6,7,8,9,10)
+--      :call(my_every_n, 3)
+--    -- seq is now the sequence 3, 6, 9
+--
+-- @param f A function to call as if it were a method.
+-- @param[opt] ... Additional parameters for `f`.
+-- @return The result of calling `f(self, ...)`, where `self` is this sequence.
+function Sqib.Seq:call(f, ...)
+  return f(self, ...)
+end
+
 --- Returns a `Sqib.Seq` consisting of this sequence followed by the specified additional sequences.
 --
 -- @param ... Sequence-like values to be converted to sequences (using the same rules as `Sqib:from()`) and concatenated
