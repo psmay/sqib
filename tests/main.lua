@@ -1209,6 +1209,50 @@ describe(
 --
 
 describe(
+  "Seq:append()",
+  function()
+    it(
+      "appends individual elements to sequences",
+      function()
+        assert.same(
+          dump_params("q", "w", "e", "r", "t", "y"),
+          dump_sqib(Sqib:over("q", "w", "e"):append("r", "t", "y"))
+        )
+        assert.same(dump_params(), dump_sqib(Sqib:empty():append()))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:empty():append("q", "w", "e")))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:over("q", "w", "e"):append()))
+      end
+    )
+  end
+)
+
+describe(
+  "Seq:concat()",
+  function()
+    it(
+      "concatenates sequences",
+      function()
+        assert.same(
+          dump_params("q", "w", "e", "r", "t", "y"),
+          dump_sqib(Sqib:over("q", "w", "e"):concat(Sqib:over("r", "t", "y")))
+        )
+        assert.same(dump_params(), dump_sqib(Sqib:empty():concat(Sqib:empty())))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:empty():concat(Sqib:over("q", "w", "e"))))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:over("q", "w", "e"):concat()))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:over("q", "w", "e"):concat(Sqib:empty())))
+      end
+    )
+    it(
+      "concatenates sequences to themselves",
+      function()
+        local seq = Sqib:over("q", "w", "e")
+        assert.same(dump_params("q", "w", "e", "q", "w", "e", "q", "w", "e"), dump_sqib(seq:concat(seq, seq)))
+      end
+    )
+  end
+)
+
+describe(
   "Seq:count()",
   function()
     it(
@@ -1482,6 +1526,56 @@ describe(
         assert.same({n = 3, "q", "w", "e"}, Sqib:over("q", "w", "e"):pack())
         assert.same({n = 6, true, nil, false, nil, true, nil}, Sqib:over(true, nil, false, nil, true, nil):pack())
         assert.same({n = 0}, Sqib:empty():pack())
+      end
+    )
+  end
+)
+
+describe(
+  "Seq:reversed()",
+  function()
+    it(
+      "reverses the sequence as given",
+      function()
+        assert.same(dump_params(), dump_sqib(Sqib:empty():reversed()))
+        assert.same(dump_params("q"), dump_sqib(Sqib:over("q"):reversed()))
+        assert.same(dump_params("e", "w", "q"), dump_sqib(Sqib:over("q", "w", "e"):reversed()))
+        assert.same(dump_params("r", "e", "w", "q"), dump_sqib(Sqib:over("q", "w", "e", "r"):reversed()))
+        assert.same(dump_params("t", "r", "e", "w", "q"), dump_sqib(Sqib:over("q", "w", "e", "r", "t"):reversed()))
+        assert.same(
+          dump_params(nil, "t", "r", "e", "w", "q"),
+          dump_sqib(Sqib:over("q", "w", "e", "r", "t", nil):reversed())
+        )
+        assert.same(
+          dump_params(nil, "t", nil, nil, nil, "q", nil),
+          dump_sqib(Sqib:over(nil, "q", nil, nil, nil, "t", nil):reversed())
+        )
+      end
+    )
+    it(
+      "refrains from iterating source until iteration",
+      function()
+        local selector_was_called = false
+
+        local seq =
+          Sqib:range(1, 5):map(
+          function(v)
+            selector_was_called = true
+            return v
+          end
+        ):reversed()
+
+        assert.False(selector_was_called)
+        local iterator = seq:iterate()
+        assert.True(selector_was_called)
+        assert.same(
+          dump_params(5, 4, 3, 2, 1),
+          dump_iter(
+            function()
+              return iterator
+            end
+          )
+        )
       end
     )
   end
@@ -1773,6 +1867,41 @@ describe(
         assert.same(dump_array(by_natural), dump_sqib(seq))
       end
     )
+    it(
+      "handles compare correctly if some compare results are nil and others aren't (bugfix)",
+      function()
+        local seq =
+          Sqib:over(
+          {x = "q", z = 10},
+          {x = "w", z = 10},
+          {x = "e"},
+          {x = "r", z = 20},
+          {x = "t", z = 5},
+          {x = "y"},
+          {x = "u", z = 5}
+        ):sorted {
+          by = function(v)
+            return v.z
+          end,
+          compare = function(a, b)
+            if a == nil then
+              return b == nil and 0 or -1
+            elseif b == nil then
+              return 1
+            else
+              return (a < b) and -1 or (a > b) and 1 or 0
+            end
+          end,
+          stable = true
+        }:map(
+          function(v)
+            return v.x
+          end
+        )
+
+        assert.same(dump_params("e", "y", "t", "u", "q", "w", "r"), dump_sqib(seq))
+      end
+    )
   end
 )
 
@@ -1905,7 +2034,7 @@ describe(
 )
 
 describe(
-  "Seq:to_array()",
+  "Seq:to_array() (no include_length param)",
   function()
     it(
       "copies sequence to an array",
@@ -1913,6 +2042,23 @@ describe(
         assert.same({"q", "w", "e"}, Sqib:over("q", "w", "e"):to_array())
         assert.same({true, nil, false, nil, true, nil}, Sqib:over(true, nil, false, nil, true, nil):to_array())
         assert.same({}, Sqib:empty():to_array())
+      end
+    )
+  end
+)
+
+describe(
+  "Seq:to_array() (include_length param set true)",
+  function()
+    it(
+      "copies sequence to an array and includes length",
+      function()
+        assert.same({{"q", "w", "e"}, 3}, {Sqib:over("q", "w", "e"):to_array(true)})
+        assert.same(
+          {{true, nil, false, nil, true, nil}, 6},
+          {Sqib:over(true, nil, false, nil, true, nil):to_array(true)}
+        )
+        assert.same({{}, 0}, {Sqib:empty():to_array(true)})
       end
     )
   end

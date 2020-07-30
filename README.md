@@ -44,30 +44,37 @@ Synopsis
         :filter(function(n) return n % 2 end)
         :pack()
 
-Notes
------
+Features
+--------
 
 This library is for doing fluent things with sequences (in a similar fashion to Scala's `scala.collection.Seq`, .NET's `IEnumerable`, and so forth).
 
-Where, for instance, [one functional library](http://lua-users.org/wiki/FunctionalLibrary) might operate on a sequence using awkwardly nested calls,
-
-Sqib wraps the sequence in an object and allows operations to be defined fluently, in the intuitive order. Then, a final operation is used to convert the sequence into something useful (an array, an iterator, etc.).
+Where, for instance, [one functional library](http://lua-users.org/wiki/FunctionalLibrary) might operate on a sequence using awkwardly nested calls, Sqib wraps the sequence in an object and allows operations to be defined fluently, in the intuitive order. Then, a final operation is used to convert the sequence into something useful (an array, a `for` loop, etc.).
 
 Most operations are deferred, meaning that they are not applied until the sequence is actually iterated. This means deeper call stacks but fewer intermediate arrays.
 
 You might use this library if you want to do functional things with sequences and:
 
-*   You don't want to deal with extra dependencies
-*   You want to be able to drop a file in instead of dealing with the proper package manager
-*   You want to treat nil as a real value
-*   You want to apply mapping and filtering without modifying the original sequence
-*   You value deferred rather than instant execution
+*   Functional considerations
+    *   **You believe nil is a real value.** Iteration over a sequence won't accidentally stop if it hits a `nil` element.
+    *   **You want to do things with sequences descriptively, without worrying about the details.** In many cases, activities such as mapping, filtering, and sorting are easier to understand, less verbose, and just less hairy with this module than the equivalent `for` loop.
+    *   **You don't want to modify the original.** As a rule, operations on sequences don't mutate their source.
+    *   **You value deferred rather than instant execution.** In general, a sequence object returned by a method on another sequence object generally won't iterate over and process its source until it is iterated itself. (`force()` is an intentional exception.) Even operations that require a copy of the entire sequence (such as `sorted()` and `reversed()`) aren't actually copied until requested for iteration.
+    *   **You want to apply extremely flexible sorting.** `Sqib`'s `sorted()` method directly supports selector functions (i.e. "sort by" behavior), compare functions, optional descending order, and optional stable sorting. Additional orderings can be specified (i.e. "then by" behavior) to break ties, each with their own parameters. And the original sequence is not modified in place.
+    *   **You want sequences to do new tricks.** New methods can be patched onto the `Sqib.Seq` type if you need something specific not already covered.
+*   Installation considerations
+    *   **You don't want to install anything else.** This module has no external dependencies.
+    *   **You want to be able to drop a file in instead of dealing with a proper package manager.** This module is designed for an environment where using LuaRocks isn't practical.
+
+Caveats
+-------
 
 If you're operating in a more serious or complete Lua environment, there are no doubt other libraries you should be using instead of this one.
 
 Users are warned that:
 
 *   I'm a developer (and a big fan of LINQ, if it wasn't obvious) but I'm not a Lua expert, so I'm learning as I go and some of this code won't be as idiomatic as it should.
+*   Some parts are implemented with efficiency in mind, other parts less so.
 *   The code in its current state scratches the proverbial itch it was intended to address, so maintenance or improvements by me are likely to be sporadic at best. Likewise, I don't have much reason to try to package and submit this module to e.g. LuaRocks.
     *   If you like this lib enough that you are willing to improve it, package it, and/or maintain it, you absolutely have my blessing to fork the repo. Drop me a line or a pull request if you do; I'd be curious to see it.
 *   I've run all the code through the `vscode-lua` formatter. I acknowledge that some of its ideas are baffling and probably un-idiomatic, but at least they're consistent, and I don't have to worry about whether some commas have spaces after them while others don't.
@@ -81,6 +88,11 @@ Name
 Sqib unofficially stands for "**S**equence **q**uery l**ib**rary".
 
 Sqib also unofficially stands for "**S**equence **q**uery for **i**mpatient <s>**b**as</s><ins>fools</ins>".
+
+Project
+-------
+
+[This project is available on Github.](https://github.com/psmay/sqib)
 
 Copyright/License
 -----------------
