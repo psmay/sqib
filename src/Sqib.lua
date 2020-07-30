@@ -1153,12 +1153,40 @@ function Sqib.Seq:pack()
   return copy
 end
 
+--- Creates a new dictionary-style table using the provided selector to determine each key-value pair.
+--
+-- @param pair_selector Function `(v, i)` that returns `k, v`, the key and value for a pair.
+-- @return The newly created table.
+-- @raise * When `pair_selector` is not provided.
+-- * When any key appears more than once.
+-- @see Sqib.Seq:to_hash
+function Sqib.Seq:pairs_to_hash(pair_selector)
+  if pair_selector == nil then
+    error("Pair selector was not provided.")
+  end
+
+  local seen = {}
+  local hash = {}
+
+  for i, v in self:iterate() do
+    local key, value = pair_selector(v, i)
+    if seen[key] then
+      error("Key '" .. key .. "' encountered more than once")
+    end
+    seen[key] = true
+    hash[key] = value
+  end
+
+  return hash
+end
+
 --- Creates a new dictionary-style table using the provided selectors to determine the keys and values.
 --
--- @param key_selector Function `(v, i)` that selects the key for an item. If omitted, the value is selected.
--- @param value_selector Function `(v, i)` that selects the value for an item. If omitted, the value is selected.
+-- @param[opt] key_selector Function `(v, i)` that selects the key for an item. If omitted, the value is selected.
+-- @param[opt] value_selector Function `(v, i)` that selects the value for an item. If omitted, the value is selected.
 -- @return The newly created table.
 -- @raise When any key appears more than once.
+-- @see Sqib.Seq:pairs_to_hash
 function Sqib.Seq:to_hash(key_selector, value_selector)
   if key_selector == nil then
     key_selector = function(v)

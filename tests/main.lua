@@ -1554,6 +1554,53 @@ describe(
 )
 
 describe(
+  "Seq:pairs_to_hash()",
+  function()
+    it(
+      "maps each value to itself if the selector returns v, v",
+      function()
+        local hash =
+          Sqib:over("a", "b", "c"):pairs_to_hash(
+          function(v)
+            return v, v
+          end
+        )
+        assert.same({a = "a", b = "b", c = "c"}, hash)
+      end
+    )
+    it(
+      "fails if a key appears more than once",
+      function()
+        assert.has_error(
+          function()
+            local hash =
+              Sqib:over("a", "b", "c", "a"):pairs_to_hash(
+              function(v)
+                return v, v
+              end
+            )
+          end
+        )
+      end
+    )
+    it(
+      "maps as expected with a normal-looking selector",
+      function()
+        local seq = Sqib:over({"a", "alpha"}, {"b", "bravo"}, {"c", "charlie"})
+        local hash =
+          seq:pairs_to_hash(
+          function(pair)
+            return pair[1], pair[2]
+          end
+        )
+
+        assert.same({a = "alpha", b = "bravo", c = "charlie"}, hash)
+      end
+    )
+  end
+)
+
+describe(
   "Seq:reversed()",
   function()
     it(
