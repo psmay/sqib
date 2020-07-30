@@ -33,10 +33,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -- @author psmay
 -- @license MIT
 -- @copyright © 2020 psmay
--- @release 0.1.0-ab
+-- @release 0.1.0-ac
 
 local Sqib = {
-  _VERSION = "0.1.0-ab"
+  _VERSION = "0.1.0-ac"
 }
 
 --
@@ -168,19 +168,33 @@ local function iterator_from_yielder(yielder)
 end
 
 -- Iterator over a temporary array, where each element is deleted as it is read.
-local function iterator_from_vanishing_array(a, n)
+local function iterator_from_vanishing_array(a, n, reversed)
   if type(n) ~= "number" then
     error("Iterator over vanishing array failed; n is " .. type(n) .. "; expected number")
   end
-  return iterator_from_yielder(
-    function()
+
+  local yielder
+
+  if reversed then
+    yielder = function()
+      for out_index = 1, n do
+        local i = n - (out_index - 1)
+        local v = a[i]
+        a[i] = nil
+        yield(out_index, v)
+      end
+    end
+  else
+    yielder = function()
       for i = 1, n do
         local v = a[i]
         a[i] = nil
         yield(i, v)
       end
     end
-  )
+  end
+
+  return iterator_from_yielder(yielder)
 end
 
 local function seq_from_yielder(yielder)
@@ -739,39 +753,22 @@ function Sqib.Seq:map(selector)
   )
 end
 
-do
-  local function reverse_in_place(a, n)
-    local forward_i = 1
-    local reverse_i = n
+--- Returns a new `Sqib.Seq` that consists of the elements of this sequence in reverse order.
+--
+-- The reverse operation itself is deferred and occurs whenever the returned `Sqib.Seq` is actually iterated. When an
+-- iterator is retrieved, the entire contents of the source sequence are copied into an internal table. The resulting
+-- element values are iterated in reverse order.
+--
+-- @return A `Sqib.Seq` representing a copy of this `Sqib.Seq` whose elements have been reversed.
+function Sqib.Seq:reversed()
+  local source = self
 
-    while forward_i < reverse_i do
-      local tmp = a[forward_i]
-      a[forward_i] = a[reverse_i]
-      a[reverse_i] = tmp
-
-      forward_i = forward_i + 1
-      reverse_i = reverse_i - 1
+  return Sqib.Seq:new {
+    iterate = function()
+      local a, n = source:to_array(true)
+      return iterator_from_vanishing_array(a, n, true)
     end
-  end
-
-  --- Returns a new `Sqib.Seq` that consists of the elements of this sequence in reverse order.
-  --
-  -- The reverse operation itself is deferred and occurs whenever the returned `Sqib.Seq` is actually iterated. When an
-  -- iterator is retrieved, the entire contents of the source sequence are copied into an internal table. This table is
-  -- reversed in place, then the resulting element values are iterated.
-  --
-  -- @return A `Sqib.Seq` representing a copy of this `Sqib.Seq` whose elements have been reversed.
-  function Sqib.Seq:reversed()
-    local source = self
-
-    return Sqib.Seq:new {
-      iterate = function()
-        local a, n = source:to_array(true)
-        reverse_in_place(a, n)
-        return iterator_from_vanishing_array(a, n)
-      end
-    }
-  end
+  }
 end
 
 --- Skips a specified number of elements, then passes through the remainder.
@@ -1031,11 +1028,9 @@ do
     local source = self
 
     local function copy_sort_iterate()
-      local elements = {}
+      local rows = {}
       local n = 0
       do
-        local rows = {}
-
         for i, v in source:iterate() do
           n = n + 1
           local row = {i = n, v = v}
@@ -1062,13 +1057,13 @@ do
         )
 
         for i = 1, n do
-          elements[i] = rows[i].v
+          rows[i] = rows[i].v
         end
       end
 
       local i = 0
 
-      return iterator_from_vanishing_array(elements, n)
+      return iterator_from_vanishing_array(rows, n)
     end
 
     return Sqib.Seq:new {iterate = copy_sort_iterate}
@@ -1224,4 +1219,3 @@ function Sqib.Seq:unique(key_selector)
 end
 
 return Sqib
-
