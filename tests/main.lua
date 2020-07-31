@@ -1227,6 +1227,28 @@ describe(
 )
 
 describe(
+  "Seq:call()",
+  function()
+    it(
+      "runs the doc example correctly",
+      function()
+        local function my_every_n(seq, n)
+          return seq:filter(
+            function(_, i)
+              return i % n == 0
+            end
+          )
+        end
+
+        local seq = Sqib:over(1, 2, 3, 4, 5, 6, 7, 8, 9, 10):call(my_every_n, 3)
+
+        assert.same(dump_params(3, 6, 9), dump_sqib(seq))
+      end
+    )
+  end
+)
+
+describe(
   "Seq:concat()",
   function()
     it(
@@ -1526,6 +1548,53 @@ describe(
         assert.same({n = 3, "q", "w", "e"}, Sqib:over("q", "w", "e"):pack())
         assert.same({n = 6, true, nil, false, nil, true, nil}, Sqib:over(true, nil, false, nil, true, nil):pack())
         assert.same({n = 0}, Sqib:empty():pack())
+      end
+    )
+  end
+)
+
+describe(
+  "Seq:pairs_to_hash()",
+  function()
+    it(
+      "maps each value to itself if the selector returns v, v",
+      function()
+        local hash =
+          Sqib:over("a", "b", "c"):pairs_to_hash(
+          function(v)
+            return v, v
+          end
+        )
+        assert.same({a = "a", b = "b", c = "c"}, hash)
+      end
+    )
+    it(
+      "fails if a key appears more than once",
+      function()
+        assert.has_error(
+          function()
+            local hash =
+              Sqib:over("a", "b", "c", "a"):pairs_to_hash(
+              function(v)
+                return v, v
+              end
+            )
+          end
+        )
+      end
+    )
+    it(
+      "maps as expected with a normal-looking selector",
+      function()
+        local seq = Sqib:over({"a", "alpha"}, {"b", "bravo"}, {"c", "charlie"})
+        local hash =
+          seq:pairs_to_hash(
+          function(pair)
+            return pair[1], pair[2]
+          end
+        )
+
+        assert.same({a = "alpha", b = "bravo", c = "charlie"}, hash)
       end
     )
   end
@@ -2167,4 +2236,3 @@ describe(
     )
   end
 )
-
