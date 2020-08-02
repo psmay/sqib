@@ -10,7 +10,6 @@ project = "Sqib"
 
 format = 'discount'
 sort = true
-readme = 'README.md'
 
 description = [[
 Sqib is a fluent sequence processor for Lua.
