@@ -33,10 +33,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -- @author psmay
 -- @license MIT
 -- @copyright © 2020 psmay
--- @release 0.1.0-ac
+-- @release 0.1.0-ae-20200802a
 
 local Sqib = {
-  _VERSION = "0.1.0-ac"
+  _VERSION = "0.1.0-ae-20200802a"
 }
 
 --
@@ -158,12 +158,17 @@ end
 local function noop()
 end
 
-local function iterator_from_yielder(yielder)
-  -- Could probably be done with coroutine.wrap, but I got this to work first.
+local function iterator_from_indexed_yielder(yielder)
   local co = coroutine.create(yielder)
   return function()
-    local code, index, value = coroutine.resume(co)
-    return index, value
+    local code, r2, r3 = coroutine.resume(co)
+    if code then
+      local index, value = r2, r3
+      return index, value
+    else
+      local error_message = r2
+      error(error_message)
+    end
   end
 end
 
@@ -194,13 +199,13 @@ local function iterator_from_vanishing_array(a, n, reversed)
     end
   end
 
-  return iterator_from_yielder(yielder)
+  return iterator_from_indexed_yielder(yielder)
 end
 
-local function seq_from_yielder(yielder)
+local function seq_from_indexed_yielder(yielder)
   return Sqib.Seq:new {
     iterate = function()
-      return iterator_from_yielder(yielder)
+      return iterator_from_indexed_yielder(yielder)
     end
   }
 end
@@ -213,7 +218,7 @@ end
 -- Internal implementation: Given `source`, a `Sqib.Seq` of `Sqib.Seq`, returns a `Sqib.Seq` that is the concatenation
 -- of the sequences. No selection or conversion is applied.
 local function flatten(source)
-  return seq_from_yielder(
+  return seq_from_indexed_yielder(
     function()
       local out_index = 0
 
@@ -288,7 +293,7 @@ local function seq_from_pairs(t, result_selector)
     end
   end
 
-  return seq_from_yielder(
+  return seq_from_indexed_yielder(
     function()
       local out_index = 0
       for k, v in pairs(t) do
@@ -304,7 +309,7 @@ local function seq_from_array(a, n)
     if type(n) ~= "number" then
       error("Creating sequence from array failed; n is " .. type(n) .. "; expected number or nil")
     end
-    return seq_from_yielder(
+    return seq_from_indexed_yielder(
       function()
         for i = 1, n do
           yield(i, a[i])
@@ -312,7 +317,7 @@ local function seq_from_array(a, n)
       end
     )
   else
-    return seq_from_yielder(
+    return seq_from_indexed_yielder(
       function()
         local count = #a
         for i = 1, count do
@@ -324,7 +329,7 @@ local function seq_from_array(a, n)
 end
 
 local function seq_from_packed(t)
-  return seq_from_yielder(
+  return seq_from_indexed_yielder(
     function()
       local n = t.n
       if type(n) ~= "number" then
@@ -477,7 +482,7 @@ end
 -- @param iterate A function which returns an iterator function.
 -- @return A new `Sqib.Seq` based on the abstract sequence traversed by `iterate`, with renumbered indexes.
 function Sqib:from_iterate(iterate)
-  return seq_from_yielder(
+  return seq_from_indexed_yielder(
     function()
       local out_index = 0
       for _, v in iterate() do
@@ -523,7 +528,7 @@ function Sqib:range(start_value, limit_value, step)
     step = 1
   end
 
-  return seq_from_yielder(
+  return seq_from_indexed_yielder(
     function()
       local out_index = 0
 
@@ -545,7 +550,7 @@ function Sqib:times(value, count)
   if count <= 0 then
     return Sqib:empty()
   else
-    return seq_from_yielder(
+    return seq_from_indexed_yielder(
       function()
         for i = 1, count do
           yield(i, value)
@@ -664,7 +669,7 @@ end
 function Sqib.Seq:filter(predicate)
   local source = self
 
-  return seq_from_yielder(
+  return seq_from_indexed_yielder(
     function()
       local out_index = 0
 
@@ -765,7 +770,7 @@ end
 function Sqib.Seq:map(selector)
   local source = self
 
-  return seq_from_yielder(
+  return seq_from_indexed_yielder(
     function()
       for i, v in source:iterate() do
         yield(i, selector(v, i))
@@ -806,7 +811,7 @@ function Sqib.Seq:skip(count)
     return source
   end
 
-  return seq_from_yielder(
+  return seq_from_indexed_yielder(
     function()
       local out_index = -count
 
@@ -829,7 +834,7 @@ end
 function Sqib.Seq:skip_while(predicate)
   local source = self
 
-  return seq_from_yielder(
+  return seq_from_indexed_yielder(
     function()
       local out_index = 0
       local skipping = true
@@ -857,7 +862,7 @@ function Sqib.Seq:take(count)
     return Sqib:empty()
   end
 
-  return seq_from_yielder(
+  return seq_from_indexed_yielder(
     function()
       local out_index = 0
 
@@ -883,7 +888,7 @@ end
 function Sqib.Seq:take_while(predicate)
   local source = self
 
-  return seq_from_yielder(
+  return seq_from_indexed_yielder(
     function()
       local out_index = 0
 
@@ -1107,7 +1112,7 @@ function Sqib.Seq:times(count)
 
   local source = self
 
-  return seq_from_yielder(
+  return seq_from_indexed_yielder(
     function()
       local out_index = 0
 
@@ -1251,7 +1256,7 @@ function Sqib.Seq:unique(key_selector)
 
   local source = self
 
-  return seq_from_yielder(
+  return seq_from_indexed_yielder(
     function()
       local seen = {}
       local out_index = 0
@@ -1265,6 +1270,104 @@ function Sqib.Seq:unique(key_selector)
       end
     end
   )
+end
+
+do
+  -- Returns the contents of this sequence as packed lists whose sizes are each `block_size` in length, except that the
+  -- final block may contain fewer.
+  local function as_packed_blocks_iterator(source, block_size)
+    -- Assumes that block_size is an integer greater than 0.
+    return iterator_from_indexed_yielder(
+      function()
+        local a = {}
+        local n = 0
+        local out_index = 0
+
+        for _, v in source:iterate() do
+          n = n + 1
+          a[n] = v
+
+          if n == block_size then
+            out_index = out_index + 1
+            a.n = n
+            yield(out_index, a)
+
+            a = {}
+            n = 0
+          end
+        end
+
+        if n > 0 then
+          out_index = out_index + 1
+          a.n = n
+          yield(out_index, a)
+        end
+      end
+    )
+  end
+
+  -- Unpacks a partial block 1 element at a time.
+  local function process_1(b, i, n)
+    if n - (i - 1) >= 1 then
+      return b[i], process_1(b, i + 1, n)
+    end
+  end
+
+  -- Unpacks a partial block 8 elements at a time.
+  local function process_8(b, i, n)
+    if n - (i - 1) >= 8 then
+      return b[i], b[i + 1], b[i + 2], b[i + 3], b[i + 4], b[i + 5], b[i + 6], b[i + 7], process_8(b, i + 8, n)
+    else
+      return process_1(b, i, n)
+    end
+  end
+
+  -- Unpacks a full block of 64 elements.
+  local function process_64(packed_blocks_iterator)
+    local has, b = packed_blocks_iterator()
+    if has == nil then
+      return
+    elseif b.n == 64 then
+      -- Apologies for any ocular hemorrhage caused by the formatting here. It truly is worse without the breaks.
+      return b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15], b[
+        16 --[[intentional break here]]
+      ], b[17], b[18], b[19], b[20], b[21], b[22], b[23], b[24], b[25], b[26], b[27], b[28], b[29], b[30], b[31], b[
+        32 --[[intentional break here]]
+      ], b[33], b[34], b[35], b[36], b[37], b[38], b[39], b[40], b[41], b[42], b[43], b[44], b[45], b[46], b[47], b[
+        48 --[[intentional break here]]
+      ], b[49], b[50], b[51], b[52], b[53], b[54], b[55], b[56], b[57], b[58], b[59], b[60], b[61], b[62], b[63], b[
+        64 --[[intentional break here]]
+      ], process_64(packed_blocks_iterator)
+    else
+      return process_8(b, 1, b.n)
+    end
+  end
+
+  local function unpack_via_packed_blocks(source)
+    local packed_blocks_iterator = as_packed_blocks_iterator(source, 64)
+    return process_64(packed_blocks_iterator)
+  end
+
+  --- Returns this entire sequence as a return value list.
+  --
+  -- Similarly to the built-in `unpack`, this method produces the values from a sequence in a form suitable for multiple
+  -- assignment or for appending to an array or parameter list.
+  --
+  --  local seq = Sqib:over(10, 20, 30)
+  --  local q, r, s = seq:unpack() -- like q = 10, r = 20, s = 30
+  --  local a = {seq:unpack()} -- like a = {10, 20, 30}
+  --  local a2 = {0, seq:unpack()} -- like a = {0, 10, 20, 30}
+  --  print("values", seq:unpack()) -- like print("values", 10, 20, 30)
+  --
+  -- This implementation may cause a stack overflow condition for a very large number of elements (as determined during
+  -- testing, a little over a million; may vary by target environment). The implementation of this method relies on a
+  -- recursive function call that Lua 5.1 seems unable to tail-call optimize. The depth of the call stack is directly
+  -- proportional to the number of elements.
+  --
+  -- @return All elements of this sequence in order.
+  function Sqib.Seq:unpack()
+    return unpack_via_packed_blocks(self)
+  end
 end
 
 return Sqib
