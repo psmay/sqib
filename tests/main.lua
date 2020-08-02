@@ -1337,11 +1337,32 @@ describe(
         )
       end
     )
-
     it(
       "batches empty as expected",
       function()
         assert.same(dump_params(), dump_sqib(Sqib:empty():batch(1)))
+      end
+    )
+    it(
+      "uses result_selector as expected",
+      function()
+        local seq =
+          Sqib:over(1, nil, 3, nil, 5, nil, 7, nil, 9, nil):batch(
+          3,
+          function(a, n)
+            return {Array = a, Count = n}
+          end
+        )
+
+        assert.same(
+          dump_params(
+            {Array = {1, nil, 3}, Count = 3},
+            {Array = {nil, 5, nil}, Count = 3},
+            {Array = {7, nil, 9}, Count = 3},
+            {Array = {nil}, Count = 1}
+          ),
+          dump_sqib(seq)
+        )
       end
     )
   end
