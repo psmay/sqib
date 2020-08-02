@@ -1330,39 +1330,6 @@ function Sqib.Seq:unique(key_selector)
 end
 
 do
-  -- Returns the contents of this sequence as packed lists whose sizes are each `block_size` in length, except that the
-  -- final block may contain fewer.
-  local function as_packed_blocks_iterator(source, block_size)
-    -- Assumes that block_size is an integer greater than 0.
-    return iterator_from_indexed_yielder(
-      function()
-        local a = {}
-        local n = 0
-        local out_index = 0
-
-        for _, v in source:iterate() do
-          n = n + 1
-          a[n] = v
-
-          if n == block_size then
-            out_index = out_index + 1
-            a.n = n
-            yield(out_index, a)
-
-            a = {}
-            n = 0
-          end
-        end
-
-        if n > 0 then
-          out_index = out_index + 1
-          a.n = n
-          yield(out_index, a)
-        end
-      end
-    )
-  end
-
   -- Unpacks a partial block 1 element at a time.
   local function process_1(b, i, n)
     if n - (i - 1) >= 1 then
@@ -1401,7 +1368,7 @@ do
   end
 
   local function unpack_via_packed_blocks(source)
-    local packed_blocks_iterator = as_packed_blocks_iterator(source, 64)
+    local packed_blocks_iterator = source:batch(64):iterate()
     return process_64(packed_blocks_iterator)
   end
 
