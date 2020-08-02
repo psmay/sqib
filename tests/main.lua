@@ -1227,6 +1227,127 @@ describe(
 )
 
 describe(
+  "Seq:batch()",
+  function()
+    it(
+      "trivially batches as expected",
+      function()
+        local source_seq = Sqib:range(1, 10)
+
+        assert.same(dump_params({n = 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}), dump_sqib(source_seq:batch(11)))
+        assert.same(dump_params({n = 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}), dump_sqib(source_seq:batch(10)))
+        assert.same(dump_params({n = 9, 1, 2, 3, 4, 5, 6, 7, 8, 9}, {n = 1, 10}), dump_sqib(source_seq:batch(9)))
+        assert.same(dump_params({n = 8, 1, 2, 3, 4, 5, 6, 7, 8}, {n = 2, 9, 10}), dump_sqib(source_seq:batch(8)))
+        assert.same(dump_params({n = 7, 1, 2, 3, 4, 5, 6, 7}, {n = 3, 8, 9, 10}), dump_sqib(source_seq:batch(7)))
+        assert.same(dump_params({n = 6, 1, 2, 3, 4, 5, 6}, {n = 4, 7, 8, 9, 10}), dump_sqib(source_seq:batch(6)))
+        assert.same(dump_params({n = 5, 1, 2, 3, 4, 5}, {n = 5, 6, 7, 8, 9, 10}), dump_sqib(source_seq:batch(5)))
+        assert.same(
+          dump_params({n = 4, 1, 2, 3, 4}, {n = 4, 5, 6, 7, 8}, {n = 2, 9, 10}),
+          dump_sqib(source_seq:batch(4))
+        )
+        assert.same(
+          dump_params({n = 3, 1, 2, 3}, {n = 3, 4, 5, 6}, {n = 3, 7, 8, 9}, {n = 1, 10}),
+          dump_sqib(source_seq:batch(3))
+        )
+        assert.same(
+          dump_params({n = 2, 1, 2}, {n = 2, 3, 4}, {n = 2, 5, 6}, {n = 2, 7, 8}, {n = 2, 9, 10}),
+          dump_sqib(source_seq:batch(2))
+        )
+        assert.same(
+          dump_params(
+            {n = 1, 1},
+            {n = 1, 2},
+            {n = 1, 3},
+            {n = 1, 4},
+            {n = 1, 5},
+            {n = 1, 6},
+            {n = 1, 7},
+            {n = 1, 8},
+            {n = 1, 9},
+            {n = 1, 10}
+          ),
+          dump_sqib(source_seq:batch(1))
+        )
+      end
+    )
+    it(
+      "batches an all-nil sequence as expected",
+      function()
+        local source_seq =
+          Sqib:range(1, 10):map(
+          function()
+            return nil
+          end
+        )
+
+        assert.same(
+          dump_params({n = 10, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil}),
+          dump_sqib(source_seq:batch(11))
+        )
+        assert.same(
+          dump_params({n = 10, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil}),
+          dump_sqib(source_seq:batch(10))
+        )
+        assert.same(
+          dump_params({n = 9, nil, nil, nil, nil, nil, nil, nil, nil, nil}, {n = 1, nil}),
+          dump_sqib(source_seq:batch(9))
+        )
+        assert.same(
+          dump_params({n = 8, nil, nil, nil, nil, nil, nil, nil, nil}, {n = 2, nil, nil}),
+          dump_sqib(source_seq:batch(8))
+        )
+        assert.same(
+          dump_params({n = 7, nil, nil, nil, nil, nil, nil, nil}, {n = 3, nil, nil, nil}),
+          dump_sqib(source_seq:batch(7))
+        )
+        assert.same(
+          dump_params({n = 6, nil, nil, nil, nil, nil, nil}, {n = 4, nil, nil, nil, nil}),
+          dump_sqib(source_seq:batch(6))
+        )
+        assert.same(
+          dump_params({n = 5, nil, nil, nil, nil, nil}, {n = 5, nil, nil, nil, nil, nil}),
+          dump_sqib(source_seq:batch(5))
+        )
+        assert.same(
+          dump_params({n = 4, nil, nil, nil, nil}, {n = 4, nil, nil, nil, nil}, {n = 2, nil, nil}),
+          dump_sqib(source_seq:batch(4))
+        )
+        assert.same(
+          dump_params({n = 3, nil, nil, nil}, {n = 3, nil, nil, nil}, {n = 3, nil, nil, nil}, {n = 1, nil}),
+          dump_sqib(source_seq:batch(3))
+        )
+        assert.same(
+          dump_params({n = 2, nil, nil}, {n = 2, nil, nil}, {n = 2, nil, nil}, {n = 2, nil, nil}, {n = 2, nil, nil}),
+          dump_sqib(source_seq:batch(2))
+        )
+        assert.same(
+          dump_params(
+            {n = 1, nil},
+            {n = 1, nil},
+            {n = 1, nil},
+            {n = 1, nil},
+            {n = 1, nil},
+            {n = 1, nil},
+            {n = 1, nil},
+            {n = 1, nil},
+            {n = 1, nil},
+            {n = 1, nil}
+          ),
+          dump_sqib(source_seq:batch(1))
+        )
+      end
+    )
+
+    it(
+      "batches empty as expected",
+      function()
+        assert.same(dump_params(), dump_sqib(Sqib:empty():batch(1)))
+      end
+    )
+  end
+)
+
+describe(
   "Seq:call()",
   function()
     it(

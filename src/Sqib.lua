@@ -33,10 +33,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -- @author psmay
 -- @license MIT
 -- @copyright © 2020 psmay
--- @release 0.1.0-ae-20200802a
+-- @release 0.1.0-ae-20200802b
 
 local Sqib = {
-  _VERSION = "0.1.0-ae-20200802a"
+  _VERSION = "0.1.0-ae-20200802b"
 }
 
 --
@@ -596,6 +596,63 @@ function Sqib.Seq:append(...)
   else
     return seq_from_all({self, Sqib:over(...)}, 2)
   end
+end
+
+--- Produces a `Sqib.Seq` consisting of this sequence's elements as blocks of a specified number of elements each.
+--
+-- Each block before the final block contains exactly `block_size` elements. The final block contains the remainder of
+-- the sequence, which is as few as one element or as many as `block_size` elements. No block will ever contain zero
+-- elements.
+--
+-- By default, the resulting sequence will produce each block as a packed list. If another form is more useful, specify
+-- a `result_selector` that accepts an array and size and produces the desired element.
+--
+--    -- Example: Produces each block as a new Sqib.Seq
+--    local seq_of_seq = seq:batch(block_size, function(a, n) return Sqib:from_array(a, n) end)
+--
+-- @param block_size The number of elements to include in each block. Must be a positive integer.
+-- @param[opt] result_selector A function `(a, n)` to be applied to each block before it is returned from the iterator,
+-- where `a` is an array containing the elements of the block and `n` is the number of elements in the block. If
+-- omitted, the result selector defaults to returning a packed list (i.e. by setting `a.n` to `n` and returning `a`).
+-- @return A `Sqib.Seq` that iterates over this sequence `block_size` elements at a time.
+function Sqib.Seq:batch(block_size, result_selector)
+  if type(block_size) ~= "number" or (block_size < 1) or (block_size ~= math.floor(block_size)) then
+    error("block_size must be a positive integer")
+  end
+
+  if result_selector == nil then
+    result_selector = function(a, n)
+      a.n = n
+      return a
+    end
+  end
+
+  local source = self
+
+  return seq_from_indexed_yielder(
+    function()
+      local a = {}
+      local n = 0
+      local out_index = 0
+
+      for _, v in source:iterate() do
+        n = n + 1
+        a[n] = v
+
+        if n == block_size then
+          out_index = out_index + 1
+          yield(out_index, result_selector(a, n))
+          a = {}
+          n = 0
+        end
+      end
+
+      if n > 0 then
+        out_index = out_index + 1
+        yield(out_index, result_selector(a, n))
+      end
+    end
+  )
 end
 
 --- Calls the specified function as if it were a method on this sequence.
