@@ -2236,3 +2236,48 @@ describe(
     )
   end
 )
+
+describe(
+  "Seq:unpack()",
+  function()
+    it(
+      "inlines as parameters identically to the input",
+      function()
+        assert.same(dump_params(), dump_params(Sqib:over():unpack()))
+        assert.same(dump_params(1, 2, 3), dump_params(Sqib:over(1, 2, 3):unpack()))
+        assert.same(dump_params(1, 2, 3, 4), dump_params(Sqib:over(1, 2, 3, 4):unpack()))
+        assert.same(dump_params(1, 2, 3, 4, 5, 6), dump_params(Sqib:over(1, 2, 3, 4, 5, 6):unpack()))
+        assert.same(dump_params(1, 2, 3, 4, 5, 6, 7, 8), dump_params(Sqib:over(1, 2, 3, 4, 5, 6, 7, 8):unpack()))
+        assert.same(dump_params(nil, nil, nil), dump_params(Sqib:over(nil, nil, nil):unpack()))
+      end
+    )
+    it(
+      "handles a pretty substantially long sequence with embedded and trailing nils without trouble",
+      function()
+        local function make_big_example_array()
+          local a = {}
+          local n = 0
+
+          for i = 1, 300 do
+            n = n + 1
+            a[n] = i
+            n = n + 1
+            a[i] = nil
+          end
+
+          return a, n
+        end
+
+        -- A copy for expected
+        local ea, en = make_big_example_array()
+
+        -- Another copy for the sequence
+        local sa, sn = make_big_example_array()
+
+        local seq = Sqib:from_array(sa, sn)
+
+        assert.same(dump_array(ea, en), dump_params(seq:unpack()))
+      end
+    )
+  end
+)
