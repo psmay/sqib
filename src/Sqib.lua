@@ -33,10 +33,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -- @author psmay
 -- @license MIT
 -- @copyright © 2020 psmay
--- @release 0.3.0-aa-20200803a
+-- @release 0.3.1-aa-20200803a
 
 local Sqib = {
-  _VERSION = "0.3.0-aa-20200803a"
+  _VERSION = "0.3.1-aa-20200803a"
 }
 
 --
