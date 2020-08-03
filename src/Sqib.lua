@@ -764,8 +764,7 @@ end
 --     end
 --
 --    -- Use call
---    local seq = Sqib
---      :over(1,2,3,4,5,6,7,8,9,10)
+--    local seq = Sqib.over(1,2,3,4,5,6,7,8,9,10)
 --      :call(my_every_n, 3)
 --    -- seq is now the sequence 3, 6, 9
 --
