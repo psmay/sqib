@@ -676,12 +676,12 @@ describe(
 --
 
 describe(
-  "Sqib:empty()",
+  "Sqib.empty()",
   function()
     it(
       "returns an empty Seq",
       function()
-        local seq = Sqib:empty()
+        local seq = Sqib.empty()
         assert.same(dump_params(), dump_sqib(seq))
       end
     )
@@ -689,14 +689,14 @@ describe(
 )
 
 describe(
-  "Sqib:from()",
+  "Sqib.from()",
   function()
     it(
       "with something that is_sqib_seq(), returns the value itself",
       function()
-        -- Sqib:empty():is_sqib_seq() returns true; this is tried in another test
-        local value = Sqib:empty()
-        local seq = Sqib:from(value)
+        -- Sqib.empty():is_sqib_seq() returns true; this is tried in another test
+        local value = Sqib.empty()
+        local seq = Sqib.from(value)
         assert.equals(value, seq)
       end
     )
@@ -705,14 +705,14 @@ describe(
       function()
         local value = {
           to_sqib_seq = function()
-            return Sqib:over(1, 2, 3):map(
+            return Sqib.over(1, 2, 3):map(
               function(v)
                 return v * 2
               end
             )
           end
         }
-        local seq = Sqib:from(value)
+        local seq = Sqib.from(value)
         assert.same(dump_params(2, 4, 6), dump_sqib(seq))
       end
     )
@@ -726,7 +726,7 @@ describe(
         }
         assert.has_error(
           function()
-            Sqib:from(value)
+            Sqib.from(value)
           end
         )
       end
@@ -734,8 +734,8 @@ describe(
     it(
       "with a Seq-like table, returns the table itself",
       function()
-        local value = Sqib:over(2, 4, 6)
-        local seq = Sqib:from(value)
+        local value = Sqib.over(2, 4, 6)
+        local seq = Sqib.from(value)
         assert.equals(value, seq)
       end
     )
@@ -743,7 +743,7 @@ describe(
       "with a packed-like table, returns a packed wrapper",
       function()
         local value = {n = 3, 2, 4, 6}
-        local seq = Sqib:from(value)
+        local seq = Sqib.from(value)
         assert.same(dump_params(2, 4, 6), dump_sqib(seq))
       end
     )
@@ -751,17 +751,19 @@ describe(
       "with a table that is not Seq-like and not packed-like, returns an array wrapper",
       function()
         local value = {2, 4, 6}
-        local seq = Sqib:from(value)
+        local seq = Sqib.from(value)
         assert.same(dump_params(2, 4, 6), dump_sqib(seq))
       end
     )
     it(
-      "with a function, returns an iterate wrapper",
+      "with a function, returns a yielder sequence",
       function()
         local value = function()
-          return ipairs({2, 4, 6})
+          coroutine.yield(2)
+          coroutine.yield(4)
+          coroutine.yield(6)
         end
-        local seq = Sqib:from(value)
+        local seq = Sqib.from(value)
         assert.same(dump_params(2, 4, 6), dump_sqib(seq))
       end
     )
@@ -771,7 +773,7 @@ describe(
         local value = "xyzzy"
         assert.has_error(
           function()
-            Sqib:from(value)
+            Sqib.from(value)
           end
         )
       end
@@ -780,19 +782,19 @@ describe(
 )
 
 describe(
-  "Sqib:from_all()",
+  "Sqib.from_all()",
   function()
     it(
       "with no parameters, returns an empty sequence",
       function()
-        local seq = Sqib:from_all()
+        local seq = Sqib.from_all()
         assert.same(dump_params(), dump_sqib(seq))
       end
     )
     it(
       "with only arrays, returns correct sequence",
       function()
-        local seq = Sqib:from_all({1, 2, 3}, {4}, {5, 6}, {}, {7, 8, 9, 10})
+        local seq = Sqib.from_all({1, 2, 3}, {4}, {5, 6}, {}, {7, 8, 9, 10})
         assert.same(dump_params(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), dump_sqib(seq))
       end
     )
@@ -800,40 +802,40 @@ describe(
 )
 
 describe(
-  "Sqib:from_array() (no length parameter)",
+  "Sqib.from_array() (no length parameter)",
   function()
     it(
       "has the correct contents for an empty sequence",
       function()
-        local seq = Sqib:from_array({})
+        local seq = Sqib.from_array({})
         assert.same(dump_params(), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence of non-nils",
       function()
-        local seq = Sqib:from_array({2, 4, 6})
+        local seq = Sqib.from_array({2, 4, 6})
         assert.same(dump_params(2, 4, 6), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence with a leading nil",
       function()
-        local seq = Sqib:from_array({nil, 4, 6})
+        local seq = Sqib.from_array({nil, 4, 6})
         assert.same(dump_params(nil, 4, 6), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence with an inner nil",
       function()
-        local seq = Sqib:from_array({2, nil, 6})
+        local seq = Sqib.from_array({2, nil, 6})
         assert.same(dump_params(2, nil, 6), dump_sqib(seq))
       end
     )
     it(
       "omits the trailing nil of a sequence with a trailing nil",
       function()
-        local seq = Sqib:from_array({2, 4, nil})
+        local seq = Sqib.from_array({2, 4, nil})
         assert.same(dump_params(2, 4), dump_sqib(seq))
       end
     )
@@ -841,40 +843,40 @@ describe(
 )
 
 describe(
-  "Sqib:from_array() (with length parameter)",
+  "Sqib.from_array() (with length parameter)",
   function()
     it(
       "has the correct contents for an empty sequence",
       function()
-        local seq = Sqib:from_array({}, 0)
+        local seq = Sqib.from_array({}, 0)
         assert.same(dump_params(), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence of non-nils",
       function()
-        local seq = Sqib:from_array({2, 4, 6}, 3)
+        local seq = Sqib.from_array({2, 4, 6}, 3)
         assert.same(dump_params(2, 4, 6), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence with a leading nil",
       function()
-        local seq = Sqib:from_array({nil, 4, 6}, 3)
+        local seq = Sqib.from_array({nil, 4, 6}, 3)
         assert.same(dump_params(nil, 4, 6), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence with an inner nil",
       function()
-        local seq = Sqib:from_array({2, nil, 6}, 3)
+        local seq = Sqib.from_array({2, nil, 6}, 3)
         assert.same(dump_params(2, nil, 6), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence with a trailing nil",
       function()
-        local seq = Sqib:from_array({2, 4, nil}, 3)
+        local seq = Sqib.from_array({2, 4, nil}, 3)
         assert.same(dump_params(2, 4, nil), dump_sqib(seq))
       end
     )
@@ -882,13 +884,13 @@ describe(
 )
 
 describe(
-  "Sqib:from_iterate()",
+  "Sqib.from_iterate()",
   function()
     it(
       "with builtin ipairs(), returns the expected result for an empty sequence",
       function()
         local seq =
-          Sqib:from_iterate(
+          Sqib.from_iterate(
           function()
             return ipairs({})
           end
@@ -900,7 +902,7 @@ describe(
       "with builtin ipairs(), returns the expected result for a sequence of non-nils",
       function()
         local seq =
-          Sqib:from_iterate(
+          Sqib.from_iterate(
           function()
             return ipairs({2, 4, 6})
           end
@@ -912,7 +914,7 @@ describe(
       "with test function nillable_ipairs(), returns the expected result for an empty sequence",
       function()
         local seq =
-          Sqib:from_iterate(
+          Sqib.from_iterate(
           function()
             return nillable_ipairs({})
           end
@@ -924,7 +926,7 @@ describe(
       "with test function nillable_ipairs(), returns the expected result for a sequence of non-nils",
       function()
         local seq =
-          Sqib:from_iterate(
+          Sqib.from_iterate(
           function()
             return nillable_ipairs({2, 4, 6})
           end
@@ -936,7 +938,7 @@ describe(
       "with test function nillable_ipairs(), returns the expected result for a sequence with a leading nil",
       function()
         local seq =
-          Sqib:from_iterate(
+          Sqib.from_iterate(
           function()
             return nillable_ipairs({nil, 4, 6})
           end
@@ -948,7 +950,7 @@ describe(
       "with test function nillable_ipairs(), returns the expected result for a sequence with an inner nil",
       function()
         local seq =
-          Sqib:from_iterate(
+          Sqib.from_iterate(
           function()
             return nillable_ipairs({2, nil, 6})
           end
@@ -960,7 +962,7 @@ describe(
       "with test function nillable_ipairs() (with length parameter), returns the expected result for a sequence with an trailing nil",
       function()
         local seq =
-          Sqib:from_iterate(
+          Sqib.from_iterate(
           function()
             return nillable_ipairs({2, 4, nil}, 3)
           end
@@ -982,7 +984,7 @@ describe(
           end
         end
 
-        local seq = Sqib:from_iterate(example_iterate, 10, 13)
+        local seq = Sqib.from_iterate(example_iterate, 10, 13)
 
         -- first pass
         assert.same(dump_params(10, 11, 12, 13), dump_sqib(seq))
@@ -994,13 +996,13 @@ describe(
 )
 
 describe(
-  "Sqib:from_keys()",
+  "Sqib.from_keys()",
   function()
     it(
       "iterates the keys from a table, in any order",
       function()
         local t = {alpha = true, bravo = true, charlie = false, delta = false}
-        local seq = Sqib:from_keys(t)
+        local seq = Sqib.from_keys(t)
         local dump = dump_sqib(seq)
 
         local fj = dump_full_disjunction(dump_params("alpha", "bravo", "charlie", "delta"), dump)
@@ -1019,40 +1021,40 @@ describe(
 )
 
 describe(
-  "Sqib:from_packed()",
+  "Sqib.from_packed()",
   function()
     it(
       "has the correct contents for an empty sequence",
       function()
-        local seq = Sqib:from_packed({n = 0})
+        local seq = Sqib.from_packed({n = 0})
         assert.same(dump_params(), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence of non-nils",
       function()
-        local seq = Sqib:from_packed({n = 3, 2, 4, 6})
+        local seq = Sqib.from_packed({n = 3, 2, 4, 6})
         assert.same(dump_params(2, 4, 6), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence with a leading nil",
       function()
-        local seq = Sqib:from_packed({n = 3, nil, 4, 6})
+        local seq = Sqib.from_packed({n = 3, nil, 4, 6})
         assert.same(dump_params(nil, 4, 6), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence with an inner nil",
       function()
-        local seq = Sqib:from_packed({n = 3, 2, nil, 6})
+        local seq = Sqib.from_packed({n = 3, 2, nil, 6})
         assert.same(dump_params(2, nil, 6), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence with a trailing nil",
       function()
-        local seq = Sqib:from_packed({n = 3, 2, 4, nil})
+        local seq = Sqib.from_packed({n = 3, 2, 4, nil})
         assert.same(dump_params(2, 4, nil), dump_sqib(seq))
       end
     )
@@ -1060,13 +1062,13 @@ describe(
 )
 
 describe(
-  "Sqib:from_pairs()",
+  "Sqib.from_pairs()",
   function()
     it(
       "iterates the pairs from a table, in any order",
       function()
         local t = {a = "alpha", b = "bravo", c = "charlie", d = "delta"}
-        local seq = Sqib:from_pairs(t)
+        local seq = Sqib.from_pairs(t)
         local dump = dump_sqib(seq)
 
         local fj =
@@ -1087,7 +1089,7 @@ describe(
       function()
         local t = {a = "alpha", b = "bravo", c = "charlie", d = "delta"}
         local seq =
-          Sqib:from_pairs(
+          Sqib.from_pairs(
           t,
           function(k, v)
             return k .. "->" .. v
@@ -1111,13 +1113,13 @@ describe(
 )
 
 describe(
-  "Sqib:from_values()",
+  "Sqib.from_values()",
   function()
     it(
       "iterates the values from a table, in any order",
       function()
         local t = {a = "alpha", b = "bravo", c = "charlie", d = "delta"}
-        local seq = Sqib:from_values(t)
+        local seq = Sqib.from_values(t)
         local dump = dump_sqib(seq)
 
         local fj = dump_full_disjunction(dump_params("alpha", "bravo", "charlie", "delta"), dump)
@@ -1136,7 +1138,7 @@ describe(
 )
 
 describe(
-  "Sqib:from_yielder()",
+  "Sqib.from_yielder()",
   function()
     it(
       "runs the doc example",
@@ -1149,7 +1151,7 @@ describe(
           end
         end
 
-        local seq = Sqib:from_yielder(example_yielder, 1, 2)
+        local seq = Sqib.from_yielder(example_yielder, 1, 2)
 
         -- first pass
         assert.same(dump_params("(1,1)", "(1,2)", "(2,1)", "(2,2)"), dump_sqib(seq))
@@ -1161,40 +1163,40 @@ describe(
 )
 
 describe(
-  "Sqib:over()",
+  "Sqib.over()",
   function()
     it(
       "has the correct contents for an empty sequence",
       function()
-        local seq = Sqib:over()
+        local seq = Sqib.over()
         assert.same(dump_params(), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence of non-nils",
       function()
-        local seq = Sqib:over(2, 4, 6)
+        local seq = Sqib.over(2, 4, 6)
         assert.same(dump_params(2, 4, 6), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence with a leading nil",
       function()
-        local seq = Sqib:over(nil, 4, 6)
+        local seq = Sqib.over(nil, 4, 6)
         assert.same(dump_params(nil, 4, 6), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence with an inner nil",
       function()
-        local seq = Sqib:over(2, nil, 6)
+        local seq = Sqib.over(2, nil, 6)
         assert.same(dump_params(2, nil, 6), dump_sqib(seq))
       end
     )
     it(
       "has the correct contents for a sequence with a trailing nil",
       function()
-        local seq = Sqib:over(2, 4, nil)
+        local seq = Sqib.over(2, 4, nil)
         assert.same(dump_params(2, 4, nil), dump_sqib(seq))
       end
     )
@@ -1202,50 +1204,50 @@ describe(
 )
 
 describe(
-  "Sqib:range()",
+  "Sqib.range()",
   function()
     it(
       "represents the specified range",
       function()
-        assert.same(dump_params(1, 2, 3, 4, 5), dump_sqib(Sqib:range(1, 5)))
-        assert.same(dump_params(), dump_sqib(Sqib:range(5, 1)))
-        assert.same(dump_params(), dump_sqib(Sqib:range(1, 5, -1)))
-        assert.same(dump_params(5, 4, 3, 2, 1), dump_sqib(Sqib:range(5, 1, -1)))
+        assert.same(dump_params(1, 2, 3, 4, 5), dump_sqib(Sqib.range(1, 5)))
+        assert.same(dump_params(), dump_sqib(Sqib.range(5, 1)))
+        assert.same(dump_params(), dump_sqib(Sqib.range(1, 5, -1)))
+        assert.same(dump_params(5, 4, 3, 2, 1), dump_sqib(Sqib.range(5, 1, -1)))
 
-        assert.same(dump_params(0, 3, 6, 9), dump_sqib(Sqib:range(0, 10, 3)))
-        assert.same(dump_params(), dump_sqib(Sqib:range(10, 0, 3)))
-        assert.same(dump_params(), dump_sqib(Sqib:range(0, 10, -3)))
-        assert.same(dump_params(10, 7, 4, 1), dump_sqib(Sqib:range(10, 0, -3)))
+        assert.same(dump_params(0, 3, 6, 9), dump_sqib(Sqib.range(0, 10, 3)))
+        assert.same(dump_params(), dump_sqib(Sqib.range(10, 0, 3)))
+        assert.same(dump_params(), dump_sqib(Sqib.range(0, 10, -3)))
+        assert.same(dump_params(10, 7, 4, 1), dump_sqib(Sqib.range(10, 0, -3)))
       end
     )
   end
 )
 
 describe(
-  "Sqib:times()",
+  "Sqib.times()",
   function()
     it(
       "behaves as expected for positive counts",
       function()
-        assert.same(dump_params("q"), dump_sqib(Sqib:times("q", 1)))
-        assert.same(dump_params("q"), dump_sqib(Sqib:times("q", 1.5)))
-        assert.same(dump_params("q", "q", "q"), dump_sqib(Sqib:times("q", 3)))
-        assert.same(dump_params("q", "q", "q"), dump_sqib(Sqib:times("q", 3.9)))
+        assert.same(dump_params("q"), dump_sqib(Sqib.times("q", 1)))
+        assert.same(dump_params("q"), dump_sqib(Sqib.times("q", 1.5)))
+        assert.same(dump_params("q", "q", "q"), dump_sqib(Sqib.times("q", 3)))
+        assert.same(dump_params("q", "q", "q"), dump_sqib(Sqib.times("q", 3.9)))
       end
     )
     it(
       "behaves as expected for zero count",
       function()
-        assert.same(dump_params(), dump_sqib(Sqib:times("q", 0)))
-        assert.same(dump_params(), dump_sqib(Sqib:times("q", 0.5)))
+        assert.same(dump_params(), dump_sqib(Sqib.times("q", 0)))
+        assert.same(dump_params(), dump_sqib(Sqib.times("q", 0.5)))
       end
     )
     it(
       "behaves as expected for negative count",
       function()
-        assert.same(dump_params(), dump_sqib(Sqib:times("q", -1000)))
-        assert.same(dump_params(), dump_sqib(Sqib:times("q", -1)))
-        assert.same(dump_params(), dump_sqib(Sqib:times("q", -0.5)))
+        assert.same(dump_params(), dump_sqib(Sqib.times("q", -1000)))
+        assert.same(dump_params(), dump_sqib(Sqib.times("q", -1)))
+        assert.same(dump_params(), dump_sqib(Sqib.times("q", -0.5)))
       end
     )
   end
@@ -1263,11 +1265,11 @@ describe(
       function()
         assert.same(
           dump_params("q", "w", "e", "r", "t", "y"),
-          dump_sqib(Sqib:over("q", "w", "e"):append("r", "t", "y"))
+          dump_sqib(Sqib.over("q", "w", "e"):append("r", "t", "y"))
         )
-        assert.same(dump_params(), dump_sqib(Sqib:empty():append()))
-        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:empty():append("q", "w", "e")))
-        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:over("q", "w", "e"):append()))
+        assert.same(dump_params(), dump_sqib(Sqib.empty():append()))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib.empty():append("q", "w", "e")))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib.over("q", "w", "e"):append()))
       end
     )
   end
@@ -1279,7 +1281,7 @@ describe(
     it(
       "trivially batches as expected",
       function()
-        local source_seq = Sqib:range(1, 10)
+        local source_seq = Sqib.range(1, 10)
 
         assert.same(dump_params({n = 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}), dump_sqib(source_seq:batch(11)))
         assert.same(dump_params({n = 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}), dump_sqib(source_seq:batch(10)))
@@ -1321,7 +1323,7 @@ describe(
       "batches an all-nil sequence as expected",
       function()
         local source_seq =
-          Sqib:range(1, 10):map(
+          Sqib.range(1, 10):map(
           function()
             return nil
           end
@@ -1387,14 +1389,14 @@ describe(
     it(
       "batches empty as expected",
       function()
-        assert.same(dump_params(), dump_sqib(Sqib:empty():batch(1)))
+        assert.same(dump_params(), dump_sqib(Sqib.empty():batch(1)))
       end
     )
     it(
       "uses result_selector as expected",
       function()
         local seq =
-          Sqib:over(1, nil, 3, nil, 5, nil, 7, nil, 9, nil):batch(
+          Sqib.over(1, nil, 3, nil, 5, nil, 7, nil, 9, nil):batch(
           3,
           function(a, n)
             return {Array = a, Count = n}
@@ -1429,7 +1431,7 @@ describe(
           )
         end
 
-        local seq = Sqib:over(1, 2, 3, 4, 5, 6, 7, 8, 9, 10):call(my_every_n, 3)
+        local seq = Sqib.over(1, 2, 3, 4, 5, 6, 7, 8, 9, 10):call(my_every_n, 3)
 
         assert.same(dump_params(3, 6, 9), dump_sqib(seq))
       end
@@ -1445,18 +1447,18 @@ describe(
       function()
         assert.same(
           dump_params("q", "w", "e", "r", "t", "y"),
-          dump_sqib(Sqib:over("q", "w", "e"):concat(Sqib:over("r", "t", "y")))
+          dump_sqib(Sqib.over("q", "w", "e"):concat(Sqib.over("r", "t", "y")))
         )
-        assert.same(dump_params(), dump_sqib(Sqib:empty():concat(Sqib:empty())))
-        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:empty():concat(Sqib:over("q", "w", "e"))))
-        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:over("q", "w", "e"):concat()))
-        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib:over("q", "w", "e"):concat(Sqib:empty())))
+        assert.same(dump_params(), dump_sqib(Sqib.empty():concat(Sqib.empty())))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib.empty():concat(Sqib.over("q", "w", "e"))))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib.over("q", "w", "e"):concat()))
+        assert.same(dump_params("q", "w", "e"), dump_sqib(Sqib.over("q", "w", "e"):concat(Sqib.empty())))
       end
     )
     it(
       "concatenates sequences to themselves",
       function()
-        local seq = Sqib:over("q", "w", "e")
+        local seq = Sqib.over("q", "w", "e")
         assert.same(dump_params("q", "w", "e", "q", "w", "e", "q", "w", "e"), dump_sqib(seq:concat(seq, seq)))
       end
     )
@@ -1471,14 +1473,14 @@ describe(
       function()
         local t = {a = "alpha", b = "bravo", c = "charlie"}
 
-        local seq_e = Sqib:empty()
-        local seq_a3 = Sqib:from_array({2, nil, 6})
-        local seq_a5 = Sqib:from_array({2, nil, 6}, 5)
-        local seq_tk = Sqib:from_keys(t)
-        local seq_tv = Sqib:from_values(t)
-        local seq_tp = Sqib:from_pairs(t)
-        local seq_p = Sqib:from_packed({n = 8, 2, 4, nil, 8, 10})
-        local seq_fa = Sqib:from_all({2, nil, 6}, {n = 5, "a", nil, "c"}, seq_e, seq_a5)
+        local seq_e = Sqib.empty()
+        local seq_a3 = Sqib.from_array({2, nil, 6})
+        local seq_a5 = Sqib.from_array({2, nil, 6}, 5)
+        local seq_tk = Sqib.from_keys(t)
+        local seq_tv = Sqib.from_values(t)
+        local seq_tp = Sqib.from_pairs(t)
+        local seq_p = Sqib.from_packed({n = 8, 2, 4, nil, 8, 10})
+        local seq_fa = Sqib.from_all({2, nil, 6}, {n = 5, "a", nil, "c"}, seq_e, seq_a5)
 
         assert.equal(seq_e:count(), 0)
         assert.equal(seq_a3:count(), 3)
@@ -1493,7 +1495,7 @@ describe(
     it(
       "counts elements that satisfy a predicate correctly",
       function()
-        local seq = Sqib:over("alpha", "bravo", "charlie", "delta", "echo")
+        local seq = Sqib.over("alpha", "bravo", "charlie", "delta", "echo")
         assert.equal(
           3,
           seq:count(
@@ -1514,7 +1516,7 @@ describe(
       "given even number predicate, filters to only even numbers",
       function()
         local seq =
-          Sqib:range(1, 9):filter(
+          Sqib.range(1, 9):filter(
           function(v)
             return v % 2 == 0
           end
@@ -1529,16 +1531,16 @@ describe(
   "Seq:flat_map()",
   function()
     local seq_of_seq =
-      Sqib:from_array(
+      Sqib.from_array(
       {
-        Sqib:over("q", "w", "e"),
-        Sqib:from_array({"r", "t", "y"}),
-        Sqib:from_packed({n = 4, "u", "i", "o", "p"})
+        Sqib.over("q", "w", "e"),
+        Sqib.from_array({"r", "t", "y"}),
+        Sqib.from_packed({n = 4, "u", "i", "o", "p"})
       }
     )
 
     local seq_of_arrays =
-      Sqib:from_array(
+      Sqib.from_array(
       {
         {"q", "w", "e"},
         {"r", "t", "y"},
@@ -1547,7 +1549,7 @@ describe(
     )
 
     local seq_of_strings =
-      Sqib:from_array(
+      Sqib.from_array(
       {
         "qwe",
         "rty",
@@ -1567,7 +1569,7 @@ describe(
 
     local function string_to_char_seq(v)
       local t = string_to_char_array(v)
-      return Sqib:from_array(t)
+      return Sqib.from_array(t)
     end
 
     local expected = dump_params("q", "w", "e", "r", "t", "y", "u", "i", "o", "p")
@@ -1649,7 +1651,7 @@ describe(
         local map_called_count = 0
 
         local source_seq =
-          Sqib:range(1, 10):map(
+          Sqib.range(1, 10):map(
           function(v)
             map_called_count = map_called_count + 1
             return v * 2
@@ -1684,14 +1686,14 @@ describe(
       function()
         local t = {a = "alpha", b = "bravo", c = "charlie"}
 
-        local seq_e = Sqib:empty()
-        local seq_a3 = Sqib:from_array({2, nil, 6})
-        local seq_a5 = Sqib:from_array({2, nil, 6}, 5)
-        local seq_tk = Sqib:from_keys(t)
-        local seq_tv = Sqib:from_values(t)
-        local seq_tp = Sqib:from_pairs(t)
-        local seq_p = Sqib:from_packed({n = 8, 2, 4, nil, 8, 10})
-        local seq_fa = Sqib:from_all({2, nil, 6}, {n = 5, "a", nil, "c"}, seq_e, seq_a5)
+        local seq_e = Sqib.empty()
+        local seq_a3 = Sqib.from_array({2, nil, 6})
+        local seq_a5 = Sqib.from_array({2, nil, 6}, 5)
+        local seq_tk = Sqib.from_keys(t)
+        local seq_tv = Sqib.from_values(t)
+        local seq_tp = Sqib.from_pairs(t)
+        local seq_p = Sqib.from_packed({n = 8, 2, 4, nil, 8, 10})
+        local seq_fa = Sqib.from_all({2, nil, 6}, {n = 5, "a", nil, "c"}, seq_e, seq_a5)
 
         assert.True(seq_e:is_sqib_seq())
         assert.True(seq_a3:is_sqib_seq())
@@ -1715,7 +1717,7 @@ describe(
       "maps a sequence as expected",
       function()
         local seq =
-          Sqib:over(1, 1, 2, 3, 5):map(
+          Sqib.over(1, 1, 2, 3, 5):map(
           function(v)
             return v * 2
           end
@@ -1734,9 +1736,9 @@ describe(
     it(
       "copies sequence to a packed list",
       function()
-        assert.same({n = 3, "q", "w", "e"}, Sqib:over("q", "w", "e"):pack())
-        assert.same({n = 6, true, nil, false, nil, true, nil}, Sqib:over(true, nil, false, nil, true, nil):pack())
-        assert.same({n = 0}, Sqib:empty():pack())
+        assert.same({n = 3, "q", "w", "e"}, Sqib.over("q", "w", "e"):pack())
+        assert.same({n = 6, true, nil, false, nil, true, nil}, Sqib.over(true, nil, false, nil, true, nil):pack())
+        assert.same({n = 0}, Sqib.empty():pack())
       end
     )
   end
@@ -1749,7 +1751,7 @@ describe(
       "maps each value to itself if the selector returns v, v",
       function()
         local hash =
-          Sqib:over("a", "b", "c"):pairs_to_hash(
+          Sqib.over("a", "b", "c"):pairs_to_hash(
           function(v)
             return v, v
           end
@@ -1763,7 +1765,7 @@ describe(
         assert.has_error(
           function()
             local hash =
-              Sqib:over("a", "b", "c", "a"):pairs_to_hash(
+              Sqib.over("a", "b", "c", "a"):pairs_to_hash(
               function(v)
                 return v, v
               end
@@ -1775,7 +1777,7 @@ describe(
     it(
       "maps as expected with a normal-looking selector",
       function()
-        local seq = Sqib:over({"a", "alpha"}, {"b", "bravo"}, {"c", "charlie"})
+        local seq = Sqib.over({"a", "alpha"}, {"b", "bravo"}, {"c", "charlie"})
         local hash =
           seq:pairs_to_hash(
           function(pair)
@@ -1795,18 +1797,18 @@ describe(
     it(
       "reverses the sequence as given",
       function()
-        assert.same(dump_params(), dump_sqib(Sqib:empty():reversed()))
-        assert.same(dump_params("q"), dump_sqib(Sqib:over("q"):reversed()))
-        assert.same(dump_params("e", "w", "q"), dump_sqib(Sqib:over("q", "w", "e"):reversed()))
-        assert.same(dump_params("r", "e", "w", "q"), dump_sqib(Sqib:over("q", "w", "e", "r"):reversed()))
-        assert.same(dump_params("t", "r", "e", "w", "q"), dump_sqib(Sqib:over("q", "w", "e", "r", "t"):reversed()))
+        assert.same(dump_params(), dump_sqib(Sqib.empty():reversed()))
+        assert.same(dump_params("q"), dump_sqib(Sqib.over("q"):reversed()))
+        assert.same(dump_params("e", "w", "q"), dump_sqib(Sqib.over("q", "w", "e"):reversed()))
+        assert.same(dump_params("r", "e", "w", "q"), dump_sqib(Sqib.over("q", "w", "e", "r"):reversed()))
+        assert.same(dump_params("t", "r", "e", "w", "q"), dump_sqib(Sqib.over("q", "w", "e", "r", "t"):reversed()))
         assert.same(
           dump_params(nil, "t", "r", "e", "w", "q"),
-          dump_sqib(Sqib:over("q", "w", "e", "r", "t", nil):reversed())
+          dump_sqib(Sqib.over("q", "w", "e", "r", "t", nil):reversed())
         )
         assert.same(
           dump_params(nil, "t", nil, nil, nil, "q", nil),
-          dump_sqib(Sqib:over(nil, "q", nil, nil, nil, "t", nil):reversed())
+          dump_sqib(Sqib.over(nil, "q", nil, nil, nil, "t", nil):reversed())
         )
       end
     )
@@ -1816,7 +1818,7 @@ describe(
         local selector_was_called = false
 
         local seq =
-          Sqib:range(1, 5):map(
+          Sqib.range(1, 5):map(
           function(v)
             selector_was_called = true
             return v
@@ -1842,7 +1844,7 @@ describe(
 describe(
   "Seq:skip()",
   function()
-    local source_seq = Sqib:over("q", "w", "e", "r", "t", "y", "u", "i", "o", "p")
+    local source_seq = Sqib.over("q", "w", "e", "r", "t", "y", "u", "i", "o", "p")
 
     it(
       "skips exactly the specified number of elements if possible",
@@ -1870,7 +1872,7 @@ describe(
 describe(
   "Seq:skip_while()",
   function()
-    local source_seq = Sqib:over("duck", "duck", "duck", "duck", "goose", "duck", "duck")
+    local source_seq = Sqib.over("duck", "duck", "duck", "duck", "goose", "duck", "duck")
 
     it(
       "skips only the part of the sequence before the predicate fails",
@@ -1919,7 +1921,7 @@ describe(
         end
 
         local seq =
-          Sqib:over(4, 5, 3, 1, 2):sorted {compare = comp}:map(
+          Sqib.over(4, 5, 3, 1, 2):sorted {compare = comp}:map(
           function(v)
             return v
           end
@@ -1933,7 +1935,7 @@ describe(
     it(
       "default ordering sorts numbers as expected",
       function()
-        local seq = Sqib:over(4, 5, 3, 1, 2):sorted()
+        local seq = Sqib.over(4, 5, 3, 1, 2):sorted()
         assert.same(dump_params(1, 2, 3, 4, 5), dump_sqib(seq))
       end
     )
@@ -1941,7 +1943,7 @@ describe(
       "sorts by selection as expected",
       function()
         local seq =
-          Sqib:over({s = "bravo"}, {s = "alpha"}, {s = "charlie"}, {s = "delta"}):sorted {
+          Sqib.over({s = "bravo"}, {s = "alpha"}, {s = "charlie"}, {s = "delta"}):sorted {
           by = function(v)
             return v.s
           end
@@ -1952,7 +1954,7 @@ describe(
     it(
       "descending ordering sorts numbers as expected",
       function()
-        local seq = Sqib:over(4, 5, 3, 1, 2):sorted {ascending = false}
+        local seq = Sqib.over(4, 5, 3, 1, 2):sorted {ascending = false}
         assert.same(dump_params(5, 4, 3, 2, 1), dump_sqib(seq))
       end
     )
@@ -1960,7 +1962,7 @@ describe(
       "combines multiple orderings as expected",
       function()
         local seq =
-          Sqib:over(
+          Sqib.over(
           {n = 2, a = "b", w = "*"},
           {n = 1, a = "a", w = "*"},
           {n = 1, a = "a", w = "***"},
@@ -2115,7 +2117,7 @@ describe(
         end
 
         local seq =
-          Sqib:from_array(by_contrived):sorted {
+          Sqib.from_array(by_contrived):sorted {
           by = function(v)
             return v.n
           end,
@@ -2129,7 +2131,7 @@ describe(
       "handles compare correctly if some compare results are nil and others aren't (bugfix)",
       function()
         local seq =
-          Sqib:over(
+          Sqib.over(
           {x = "q", z = 10},
           {x = "w", z = 10},
           {x = "e"},
@@ -2166,7 +2168,7 @@ describe(
 describe(
   "Seq:take()",
   function()
-    local source_seq = Sqib:over("q", "w", "e", "r", "t", "y", "u", "i", "o", "p")
+    local source_seq = Sqib.over("q", "w", "e", "r", "t", "y", "u", "i", "o", "p")
 
     it(
       "takes exactly the specified number of elements if possible",
@@ -2194,7 +2196,7 @@ describe(
 describe(
   "Seq:take_while()",
   function()
-    local source_seq = Sqib:over("duck", "duck", "duck", "duck", "goose", "duck", "duck")
+    local source_seq = Sqib.over("duck", "duck", "duck", "duck", "goose", "duck", "duck")
 
     it(
       "takes only the part of the sequence before the predicate fails",
@@ -2232,7 +2234,7 @@ describe(
 describe(
   "Seq:times()",
   function()
-    local source_seq = Sqib:over("q", "w", "e")
+    local source_seq = Sqib.over("q", "w", "e")
 
     it(
       "produces no elements if count <= 0",
@@ -2265,7 +2267,7 @@ describe(
           end
         end
 
-        local mutable_seq = Sqib:from_iterate(iterate)
+        local mutable_seq = Sqib.from_iterate(iterate)
         local seq = mutable_seq:times(3)
 
         -- We're making `mutable_seq` a moving target to demonstrate that no caching is taking place.
@@ -2297,9 +2299,9 @@ describe(
     it(
       "copies sequence to an array",
       function()
-        assert.same({"q", "w", "e"}, Sqib:over("q", "w", "e"):to_array())
-        assert.same({true, nil, false, nil, true, nil}, Sqib:over(true, nil, false, nil, true, nil):to_array())
-        assert.same({}, Sqib:empty():to_array())
+        assert.same({"q", "w", "e"}, Sqib.over("q", "w", "e"):to_array())
+        assert.same({true, nil, false, nil, true, nil}, Sqib.over(true, nil, false, nil, true, nil):to_array())
+        assert.same({}, Sqib.empty():to_array())
       end
     )
   end
@@ -2311,12 +2313,12 @@ describe(
     it(
       "copies sequence to an array and includes length",
       function()
-        assert.same({{"q", "w", "e"}, 3}, {Sqib:over("q", "w", "e"):to_array(true)})
+        assert.same({{"q", "w", "e"}, 3}, {Sqib.over("q", "w", "e"):to_array(true)})
         assert.same(
           {{true, nil, false, nil, true, nil}, 6},
-          {Sqib:over(true, nil, false, nil, true, nil):to_array(true)}
+          {Sqib.over(true, nil, false, nil, true, nil):to_array(true)}
         )
-        assert.same({{}, 0}, {Sqib:empty():to_array(true)})
+        assert.same({{}, 0}, {Sqib.empty():to_array(true)})
       end
     )
   end
@@ -2328,7 +2330,7 @@ describe(
     it(
       "maps each value to itself if no selectors are provided",
       function()
-        local hash = Sqib:over("a", "b", "c"):to_hash()
+        local hash = Sqib.over("a", "b", "c"):to_hash()
         assert.same({a = "a", b = "b", c = "c"}, hash)
       end
     )
@@ -2337,7 +2339,7 @@ describe(
       function()
         assert.has_error(
           function()
-            local hash = Sqib:over("a", "b", "c", "a"):to_hash()
+            local hash = Sqib.over("a", "b", "c", "a"):to_hash()
           end
         )
       end
@@ -2345,7 +2347,7 @@ describe(
     it(
       "uses selectors if they are provided",
       function()
-        local seq = Sqib:over({"a", "alpha"}, {"b", "bravo"}, {"c", "charlie"})
+        local seq = Sqib.over({"a", "alpha"}, {"b", "bravo"}, {"c", "charlie"})
         local hash =
           seq:to_hash(
           function(pair)
@@ -2369,14 +2371,14 @@ describe(
       function()
         local t = {a = "alpha", b = "bravo", c = "charlie"}
 
-        local seq_e = Sqib:empty()
-        local seq_a3 = Sqib:from_array({2, nil, 6})
-        local seq_a5 = Sqib:from_array({2, nil, 6}, 5)
-        local seq_tk = Sqib:from_keys(t)
-        local seq_tv = Sqib:from_values(t)
-        local seq_tp = Sqib:from_pairs(t)
-        local seq_p = Sqib:from_packed({n = 8, 2, 4, nil, 8, 10})
-        local seq_fa = Sqib:from_all({2, nil, 6}, {n = 5, "a", nil, "c"}, seq_e, seq_a5)
+        local seq_e = Sqib.empty()
+        local seq_a3 = Sqib.from_array({2, nil, 6})
+        local seq_a5 = Sqib.from_array({2, nil, 6}, 5)
+        local seq_tk = Sqib.from_keys(t)
+        local seq_tv = Sqib.from_values(t)
+        local seq_tp = Sqib.from_pairs(t)
+        local seq_p = Sqib.from_packed({n = 8, 2, 4, nil, 8, 10})
+        local seq_fa = Sqib.from_all({2, nil, 6}, {n = 5, "a", nil, "c"}, seq_e, seq_a5)
 
         assert.equal(seq_e, seq_e:to_sqib_seq())
         assert.equal(seq_a3, seq_a3:to_sqib_seq())
@@ -2394,7 +2396,7 @@ describe(
 describe(
   "Seq:unique()",
   function()
-    local source_seq = Sqib:over("The", "first", "to", "the", "second", "to", "the", "third")
+    local source_seq = Sqib.over("The", "first", "to", "the", "second", "to", "the", "third")
     it(
       "given a sequence of natural values, removes duplicates",
       function()
@@ -2419,7 +2421,7 @@ describe(
     it(
       "given a sequence that contains natural values and nils, removes duplicates",
       function()
-        local seq = Sqib:over("The", nil, "to", "the", nil, "to", "the", nil)
+        local seq = Sqib.over("The", nil, "to", "the", nil, "to", "the", nil)
         assert.same(dump_params("The", nil, "to", "the"), dump_sqib(seq:unique()))
       end
     )
@@ -2432,12 +2434,12 @@ describe(
     it(
       "inlines as parameters identically to the input",
       function()
-        assert.same(dump_params(), dump_params(Sqib:over():unpack()))
-        assert.same(dump_params(1, 2, 3), dump_params(Sqib:over(1, 2, 3):unpack()))
-        assert.same(dump_params(1, 2, 3, 4), dump_params(Sqib:over(1, 2, 3, 4):unpack()))
-        assert.same(dump_params(1, 2, 3, 4, 5, 6), dump_params(Sqib:over(1, 2, 3, 4, 5, 6):unpack()))
-        assert.same(dump_params(1, 2, 3, 4, 5, 6, 7, 8), dump_params(Sqib:over(1, 2, 3, 4, 5, 6, 7, 8):unpack()))
-        assert.same(dump_params(nil, nil, nil), dump_params(Sqib:over(nil, nil, nil):unpack()))
+        assert.same(dump_params(), dump_params(Sqib.over():unpack()))
+        assert.same(dump_params(1, 2, 3), dump_params(Sqib.over(1, 2, 3):unpack()))
+        assert.same(dump_params(1, 2, 3, 4), dump_params(Sqib.over(1, 2, 3, 4):unpack()))
+        assert.same(dump_params(1, 2, 3, 4, 5, 6), dump_params(Sqib.over(1, 2, 3, 4, 5, 6):unpack()))
+        assert.same(dump_params(1, 2, 3, 4, 5, 6, 7, 8), dump_params(Sqib.over(1, 2, 3, 4, 5, 6, 7, 8):unpack()))
+        assert.same(dump_params(nil, nil, nil), dump_params(Sqib.over(nil, nil, nil):unpack()))
       end
     )
     it(
@@ -2463,7 +2465,7 @@ describe(
         -- Another copy for the sequence
         local sa, sn = make_big_example_array()
 
-        local seq = Sqib:from_array(sa, sn)
+        local seq = Sqib.from_array(sa, sn)
 
         assert.same(dump_array(ea, en), dump_params(seq:unpack()))
       end

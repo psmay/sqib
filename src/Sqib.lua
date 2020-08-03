@@ -33,10 +33,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -- @author psmay
 -- @license MIT
 -- @copyright © 2020 psmay
--- @release 0.1.0-ae-20200802b
+-- @release 0.3.0-aa-20200802a
 
 local Sqib = {
-  _VERSION = "0.1.0-ae-20200802b"
+  _VERSION = "0.3.0-aa-20200802a"
 }
 
 --
@@ -171,7 +171,7 @@ end
 -- Note that the number of bound parameters is limited by Sqib.Seq:unpack().
 local function bind(f, ...)
   if select("#", ...) > 0 then
-    local bound_parameters = Sqib:over(...)
+    local bound_parameters = Sqib.over(...)
     return function(...)
       return f(bound_parameters:append(...):unpack())
     end
@@ -273,9 +273,9 @@ local function iterator_from_vanishing_array(a, n, reversed)
   return iterator_from_indexed_yielder(indexed_yielder)
 end
 
--- Sqib:from(v) packaged as a selector.
+-- Sqib.from(v) packaged as a selector.
 local function selector_seq_from(v, i)
-  return Sqib:from(v)
+  return Sqib.from(v)
 end
 
 -- Internal implementation: Given `source`, a `Sqib.Seq` of `Sqib.Seq`, returns a `Sqib.Seq` that is the concatenation
@@ -309,12 +309,12 @@ local function try_seq_from(x)
         error("to_sqib_seq() returned a value that does not appear to be a Sqib sequence")
       end
     elseif type(x.n) == "number" then
-      return Sqib:from_packed(x)
+      return Sqib.from_packed(x)
     else
-      return Sqib:from_array(x)
+      return Sqib.from_array(x)
     end
   elseif type_x == "function" then
-    return Sqib:from_iterate(x)
+    return Sqib.from_yielder(x)
   else
     return nil
   end
@@ -327,7 +327,7 @@ local function seq_from_all(a, n)
     error("Sequence concatenation failed; parameter count is type " .. type(n) .. "; expected number")
   end
   if n <= 0 then
-    return Sqib:empty()
+    return Sqib.empty()
   end
 
   local sequences = {}
@@ -341,11 +341,11 @@ local function seq_from_all(a, n)
   end
 
   if n == 0 then
-    return Sqib:empty()
+    return Sqib.empty()
   elseif n == 1 then
     return sequences[1]
   else
-    return flatten(Sqib:from_array(sequences, n))
+    return flatten(Sqib.from_array(sequences, n))
   end
 end
 
@@ -405,10 +405,6 @@ local function seq_from_packed(t)
   )
 end
 
---- Static methods for creating Sqib sequences.
---
--- @type Sqib
-
 do
   -- This is lazy so that it can appear before Sqib.Seq:new() is defined.
   local get_empty_seq = function()
@@ -432,7 +428,7 @@ do
   --- Returns a new `Sqib.Seq` containing zero elements.
   --
   -- @return A new, empty `Sqib.Seq`.
-  function Sqib:empty()
+  function Sqib.empty()
     return get_empty_seq()
   end
 end
@@ -446,9 +442,9 @@ end
 --         `self`.
 --       - If the value `seq` returned by `value:to_sqib_seq()` is not a table, or `seq.is_sqib_seq` is not a function,
 --         or `seq:is_sqib_seq()` does not return true, an error is raised.
---     - Otherwise, if `value.n` exists as a number, the result of `Sqib:from_packed(value)` is used.
---     - Otherwise, the result of `Sqib:from_array(value)` is used.
---  - If `value` is a function, the result of `Sqib:from_iterate(value)` is used.
+--     - Otherwise, if `value.n` exists as a number, the result of `Sqib.from_packed(value)` is used.
+--     - Otherwise, the result of `Sqib.from_array(value)` is used.
+--  - If `value` is a function, the result of `Sqib.from_yielder(value)` is used.
 --  - Otherwise, an error is raised.
 --
 -- @param value A sequence-like value to be converted to a sequence.
@@ -456,7 +452,7 @@ end
 -- @raise * When `value` has no automatic conversion to a sequence.
 -- * When `value:to_sqib_seq()`, if found, returns a value that does not appear to be a sequence (i.e., does not pass
 --   the `is_sqib_seq()` test).
-function Sqib:from(value)
+function Sqib.from(value)
   local s = try_seq_from(value)
   if s == nil then
     error("Value has no automatic conversion to a sequence")
@@ -470,7 +466,7 @@ end
 -- @param[opt] result_selector A function `(k, v)` that selects the output element based on each key-value pair. If
 -- omitted, the selector produces a two-element array `{k, v}` containing the key and the value.
 -- @return A new `Sqib.Seq` representing the key-value pairs of `t`, in no particular order.
-function Sqib:from_pairs(t, result_selector)
+function Sqib.from_pairs(t, result_selector)
   return seq_from_pairs(t, result_selector)
 end
 
@@ -478,8 +474,8 @@ end
 --
 -- @param t A table whose keys to traverse.
 -- @return A new `Sqib.Seq` representing the keys of `t`, in no particular order.
-function Sqib:from_keys(t)
-  return Sqib:from_pairs(
+function Sqib.from_keys(t)
+  return Sqib.from_pairs(
     t,
     function(k)
       return k
@@ -491,8 +487,8 @@ end
 --
 -- @param t A table whose values to traverse.
 -- @return A new `Sqib.Seq` representing the values of `t`, in no particular order.
-function Sqib:from_values(t)
-  return Sqib:from_pairs(
+function Sqib.from_values(t)
+  return Sqib.from_pairs(
     t,
     function(_, v)
       return v
@@ -502,14 +498,14 @@ end
 
 --- Produces a `Sqib.Seq` by converting each parameter to a `Sqib.Seq` and concatenating the results.
 --
--- @param ... Sequence-like values to be converted to sequences (using the same rules as `Sqib:from()`) and
+-- @param ... Sequence-like values to be converted to sequences (using the same rules as `Sqib.from()`) and
 -- concatenated.
 -- @return A `Sqib.Seq` obtained by automatically converting every parameter to a `Sqib.Seq`, then concatenating the
 -- results.
 -- @raise * When any parameter has no automatic conversion to a sequence.
 -- * When, for any parameter `v`, `v:to_sqib_seq()` is found but returns a value that does not appear to be a sequence
 --   (i.e., does not pass the `is_sqib_seq()` test).
-function Sqib:from_all(...)
+function Sqib.from_all(...)
   local n = select("#", ...)
   return seq_from_all({...}, n)
 end
@@ -522,7 +518,7 @@ end
 -- beginning of each new iteration.
 -- @return A `Sqib.Seq` consisting of the first `n` elements of `a`, or, if `n` is omitted, the first `#a` elements of
 -- `a`.
-function Sqib:from_array(a, n)
+function Sqib.from_array(a, n)
   return seq_from_array(a, n)
 end
 
@@ -548,7 +544,7 @@ end
 --      end
 --    end
 --
---    local seq = Sqib:from_iterate(example_iterate, 10, 13)
+--    local seq = Sqib.from_iterate(example_iterate, 10, 13)
 --    -- sequence is 10, 11, 12, 13
 --
 -- The index value produced by the iterator need not be in any particular order; the requirement is only that the index
@@ -559,7 +555,7 @@ end
 -- @param iterate A function which returns an iterator function.
 -- @param[opt] ... Parameters that will be passed to `iterate` at the beginning of iteration.
 -- @return A new `Sqib.Seq` based on the abstract sequence traversed by `iterate`, with renumbered indexes.
-function Sqib:from_iterate(iterate, ...)
+function Sqib.from_iterate(iterate, ...)
   local bound_iterate = bind(iterate, ...)
 
   return seq_from_indexed_yielder(
@@ -576,8 +572,8 @@ end
 --- Returns a `Sqib.Seq` based on the packed array `a` whose length is `a.n`.
 --
 -- @param t A packed list table; i.e. an array with an `n` property explicitly set to the list length.
--- @return A new `Sqib:Seq` based on the elements of `t`.
-function Sqib:from_packed(t)
+-- @return A new `Sqib.Seq` based on the elements of `t`.
+function Sqib.from_packed(t)
   return seq_from_packed(t)
 end
 
@@ -594,13 +590,13 @@ end
 --      end
 --    end
 --
---    local seq = Sqib:from_yielder(example_yielder, 1, 2)
+--    local seq = Sqib.from_yielder(example_yielder, 1, 2)
 --    -- seq is "(1,1)", "(1,2)", "(2,1)", "(2,2)"
 --
 -- @param yielder A function which returns an iterator function.
 -- @param[opt] ... Parameters that will be passed to `iterate` at the beginning of iteration.
 -- @return A new `Sqib.Seq` based on the abstract sequence traversed by `iterate`, with renumbered indexes.
-function Sqib:from_yielder(yielder, ...)
+function Sqib.from_yielder(yielder, ...)
   local bound_yielder = bind(yielder, ...)
   return seq_from_unindexed_yielder(bound_yielder)
 end
@@ -609,12 +605,12 @@ end
 --
 -- @param ... Elements to be traversed by the new sequence.
 -- @return A new `Sqib.Seq` based on the values of `...`.
-function Sqib:over(...)
+function Sqib.over(...)
   local n = select("#", ...)
   if n == 0 then
-    return Sqib:empty()
+    return Sqib.empty()
   end
-  return Sqib:from_array({...}, n)
+  return Sqib.from_array({...}, n)
 end
 
 --- Returns a new `Sqib.Seq` over the specified range.
@@ -627,7 +623,7 @@ end
 -- @param limit_value The limit for the final value of the range.
 -- @param[opt=1] step The step value for iteration.
 -- @return A new `Sqib.Seq` with contents based on the specified range.
-function Sqib:range(start_value, limit_value, step)
+function Sqib.range(start_value, limit_value, step)
   if step == nil then
     step = 1
   end
@@ -649,10 +645,10 @@ end
 -- @param value The element value to be repeated.
 -- @param count The number of times to repeat `value`.
 -- @return A new `Sqib.Seq` consisting of `value` repeated `count` times.
-function Sqib:times(value, count)
+function Sqib.times(value, count)
   count = math.floor(count)
   if count <= 0 then
-    return Sqib:empty()
+    return Sqib.empty()
   else
     return seq_from_indexed_yielder(
       function()
@@ -678,7 +674,7 @@ Sqib.Seq = {}
 -- This method is provided to allow subclasses. The implementation does nothing beyond creating the object and setting
 -- the type's index and the instance's metatable.
 --
--- See the methods of `Sqib` (for example, `Sqib:from()`) for simple ways to create `Sqib.Seq` objects from actual data.
+-- See the methods of `Sqib` (for example, `Sqib.from()`) for simple ways to create `Sqib.Seq` objects from actual data.
 --
 -- @param[opt={}] o A table to convert into this type.
 -- @return `o`, having been converted to this type.
@@ -698,7 +694,7 @@ function Sqib.Seq:append(...)
   if n == 0 then
     return self
   else
-    return seq_from_all({self, Sqib:over(...)}, 2)
+    return seq_from_all({self, Sqib.over(...)}, 2)
   end
 end
 
@@ -712,7 +708,7 @@ end
 -- a `result_selector` that accepts an array and size and produces the desired element.
 --
 --    -- Example: Produces each block as a new Sqib.Seq
---    local seq_of_seq = seq:batch(block_size, function(a, n) return Sqib:from_array(a, n) end)
+--    local seq_of_seq = seq:batch(block_size, function(a, n) return Sqib.from_array(a, n) end)
 --
 -- @param block_size The number of elements to include in each block. Must be a positive integer.
 -- @param[opt] result_selector A function `(a, n)` to be applied to each block before it is returned from the iterator,
@@ -782,7 +778,7 @@ end
 
 --- Returns a `Sqib.Seq` consisting of this sequence followed by the specified additional sequences.
 --
--- @param ... Sequence-like values to be converted to sequences (using the same rules as `Sqib:from()`) and concatenated
+-- @param ... Sequence-like values to be converted to sequences (using the same rules as `Sqib.from()`) and concatenated
 -- to this sequence.
 -- @return A `Sqib.Seq` consisting of the elements of this sequence followed by the elements of each of the specified
 -- additional sequences.
@@ -849,7 +845,7 @@ end
 -- @param[opt] selector A sequence-returning function `(v, i)` to apply to each element in the sequence. If omitted, the
 -- selector returns the element value.
 -- @param[opt=true] convert_result Indicates whether the value returned from the selector should be converted into a
--- `Sqib.Seq` using `Sqib:from()`, which allows the operation to flatten certain other non-`Sqib.Seq` sequences. Set to
+-- `Sqib.Seq` using `Sqib.from()`, which allows the operation to flatten certain other non-`Sqib.Seq` sequences. Set to
 -- `false` if the selector always produces a `Sqib.Seq` and doesn't need the additional conversion.
 -- @return A new `Sqib.Seq` consisting of the concatenated elements of the sequences returned by `selector` as applied
 -- to each element from this `Sqib.Seq`.
@@ -880,7 +876,7 @@ end
 -- * The resulting sequence itself doesn't need to perform any non-trivial computations. Any (potentially intensive)
 --   computation specified before the force only happens once.
 -- * The resulting sequence will not vary between iterations, even if
---   * this source sequence is mutable (such as an array passed to `Sqib:from()`, if anything other than the sequence
+--   * this source sequence is mutable (such as an array passed to `Sqib.from()`, if anything other than the sequence
 --     still has a reference to it)
 --   * this source sequence is based on computations which use variables that are themselves mutable
 -- * The resulting sequence generally occupies more memory.
@@ -892,16 +888,16 @@ end
 -- `Sqib.Seq`.
 function Sqib.Seq:force()
   local a, n = self:to_array(true)
-  return Sqib:from_array(a, n)
+  return Sqib.from_array(a, n)
 end
 
 --- Returns whether this object should be treated as `Sqib.Seq`.
 --
--- A function named `is_sqib_seq` on any object is assumed (e.g. by `Sqib:from()`) to return `true` if the object is a
+-- A function named `is_sqib_seq` on any object is assumed (e.g. by `Sqib.from()`) to return `true` if the object is a
 -- `Sqib.Seq` (or close enough to one that it can be treated as one). This method exists for the purpose of identifying
 -- an object as a `Sqib.Seq` in absence of any reliable way to do so in Lua.
 --
--- `Sqib:Seq:is_sqib_seq()` is specifically defined to return `true`.
+-- `Sqib.Seq:is_sqib_seq()` is specifically defined to return `true`.
 --
 -- This should not be overridden by derived types of `Sqib.Seq`.
 --
@@ -1020,7 +1016,7 @@ function Sqib.Seq:take(count)
   count = math.floor(count)
 
   if count <= 0 then
-    return Sqib:empty()
+    return Sqib.empty()
   end
 
   return seq_from_indexed_yielder(
@@ -1268,7 +1264,7 @@ end
 function Sqib.Seq:times(count)
   count = math.floor(count)
   if count <= 0 then
-    return Sqib:empty()
+    return Sqib.empty()
   end
 
   local source = self
@@ -1383,7 +1379,7 @@ end
 
 --- Returns this `Sqib.Seq` object.
 --
--- A method named `to_sqib_seq` on any object is assumed (e.g. by `Sqib:from()`) to return a Sqib sequence equivalent to
+-- A method named `to_sqib_seq` on any object is assumed (e.g. by `Sqib.from()`) to return a Sqib sequence equivalent to
 -- the object.
 --
 -- `Sqib.Seq:to_sqib_seq()` is specifically defined to return `self`.
@@ -1481,7 +1477,7 @@ do
   -- Similarly to the built-in `unpack`, this method produces the values from a sequence in a form suitable for multiple
   -- assignment or for appending to an array or parameter list.
   --
-  --  local seq = Sqib:over(10, 20, 30)
+  --  local seq = Sqib.over(10, 20, 30)
   --  local q, r, s = seq:unpack() -- like q = 10, r = 20, s = 30
   --  local a = {seq:unpack()} -- like a = {10, 20, 30}
   --  local a2 = {0, seq:unpack()} -- like a = {0, 10, 20, 30}
