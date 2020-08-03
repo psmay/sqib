@@ -13,27 +13,27 @@ Synopsis
     local seq = Sqib.from_packed({ n=6, 2, 4, 6, 8, 10, 12 })
     -- From array (discards trailing nils)
     local seq = Sqib.from_array({ 2, 4, 6, 8, 10, 12 })
-	-- From a yielding function
-	local seq = Sqib.from_yielder(function()
-		for i=2,12,2 do
-			-- Produce one element at a time using coroutine.yield(i)
-			coroutine.yield(i)
-		end
-	end)
+    -- From a yielding function
+    local seq = Sqib.from_yielder(function()
+      for i=2,12,2 do
+        -- Produce one element at a time using coroutine.yield(i)
+        coroutine.yield(i)
+      end
+    end)
 
     -- If it's an object that `Sqib.from()` knows how to detect, you can use it instead
     local seq = Sqib.from({ n=6, 2, 4, 6, 8, 10, 12 })
     local seq = Sqib.from({ 2, 4, 6, 8, 10, 12 })
-	local seq = Sqib.from(function()
-		for i=2,12,2 do
-			coroutine.yield(i)
-		end
-	end)
+    local seq = Sqib.from(function()
+      for i=2,12,2 do
+        coroutine.yield(i)
+      end
+    end)
 
     -- Apply operations fluently
     local result_seq = seq
-        :map(function(n) return n / 2 end)
-        :filter(function(n) return n % 2 != 0 end)
+      :map(function(n) return n / 2 end)
+      :filter(function(n) return n % 2 != 0 end)
 
     -- Get the result as an array
     local result_array = result_seq:to_array()
@@ -43,14 +43,14 @@ Synopsis
 
     -- Or iterate over the result directly
     for i, v in result_seq:iterate() do
-        do_something(i, v)
+      do_something(i, v)
     end
 
     -- Do a bunch of the above without intermediate variables
     local result_packed = Sqib.over(2, 4, 6, 8, 10, 12)
-        :map(function(n) return n / 2 end)
-        :filter(function(n) return n % 2 end)
-        :pack()
+      :map(function(n) return n / 2 end)
+      :filter(function(n) return n % 2 end)
+      :pack()
 
 Features
 --------
