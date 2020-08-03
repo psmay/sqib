@@ -968,6 +968,28 @@ describe(
         assert.same(dump_params(2, 4, nil), dump_sqib(seq))
       end
     )
+    it(
+      "with extra parameters, parameters are passed to the iterate function (doc example)",
+      function()
+        local function example_iterate(start, limit)
+          local i = start - 1
+
+          return function()
+            if i < limit then
+              i = i + 1
+              return true, i
+            end
+          end
+        end
+
+        local seq = Sqib:from_iterate(example_iterate, 10, 13)
+
+        -- first pass
+        assert.same(dump_params(10, 11, 12, 13), dump_sqib(seq))
+        -- second pass
+        assert.same(dump_params(10, 11, 12, 13), dump_sqib(seq))
+      end
+    )
   end
 )
 
@@ -1108,6 +1130,31 @@ describe(
           },
           fj
         )
+      end
+    )
+  end
+)
+
+describe(
+  "Sqib:from_yielder()",
+  function()
+    it(
+      "runs the doc example",
+      function()
+        local function example_yielder(start, limit)
+          for i = start, limit do
+            for j = start, limit do
+              coroutine.yield("(" .. i .. "," .. j .. ")")
+            end
+          end
+        end
+
+        local seq = Sqib:from_yielder(example_yielder, 1, 2)
+
+        -- first pass
+        assert.same(dump_params("(1,1)", "(1,2)", "(2,1)", "(2,2)"), dump_sqib(seq))
+        -- second pass
+        assert.same(dump_params("(1,1)", "(1,2)", "(2,1)", "(2,2)"), dump_sqib(seq))
       end
     )
   end

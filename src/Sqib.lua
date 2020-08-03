@@ -158,8 +158,30 @@ end
 local function noop()
 end
 
-local function iterator_from_indexed_yielder(yielder)
-  local co = coroutine.create(yielder)
+-- Wraps a function to pre-set its first parameters.
+--
+--    ff = bind(f, parameter1, parameter2)
+--    -- equivalent to
+--    ff = function(...) return f(parameter1, parameter2, ...) end
+--
+--    ff = bind(f)
+--    -- equivalent to
+--    ff = f
+--
+-- Note that the number of bound parameters is limited by Sqib.Seq:unpack().
+local function bind(f, ...)
+  if select("#", ...) > 0 then
+    local bound_parameters = Sqib:over(...)
+    return function(...)
+      return f(bound_parameters:append(...):unpack())
+    end
+  else
+    return f
+  end
+end
+
+local function iterator_from_indexed_yielder(indexed_yielder)
+  local co = coroutine.create(indexed_yielder)
   return function()
     local code, r2, r3 = coroutine.resume(co)
     if code then
@@ -172,16 +194,65 @@ local function iterator_from_indexed_yielder(yielder)
   end
 end
 
+local function seq_from_indexed_yielder(indexed_yielder)
+  return Sqib.Seq:new {
+    iterate = function()
+      return iterator_from_indexed_yielder(indexed_yielder)
+    end
+  }
+end
+
+local function iterator_from_unindexed_yielder(unindexed_yielder)
+  local sentinel = {}
+
+  local wrapped_yielder = function()
+    -- This wrap prevents the return from unindexed_yielder() from being returned from the resume.
+    unindexed_yielder()
+    -- This value marks the end of the sequence.
+    return sentinel
+  end
+
+  local still_yielding = true
+  local i = 0
+  local co = coroutine.create(wrapped_yielder)
+  return function()
+    if still_yielding then
+      local code, r = coroutine.resume(co)
+      if code then
+        local v = r
+
+        if v == sentinel then
+          still_yielding = false
+        else
+          i = i + 1
+          return i, v
+        end
+      else
+        local error_message = r
+        error(error_message)
+      end
+    end
+  end
+end
+
+local function seq_from_unindexed_yielder(unindexed_yielder)
+  return Sqib.Seq:new {
+    iterate = function()
+      return iterator_from_unindexed_yielder(unindexed_yielder)
+    end
+  }
+end
+
 -- Iterator over a temporary array, where each element is deleted as it is read.
 local function iterator_from_vanishing_array(a, n, reversed)
   if type(n) ~= "number" then
     error("Iterator over vanishing array failed; n is " .. type(n) .. "; expected number")
   end
 
-  local yielder
+  local indexed_yielder
 
   if reversed then
-    yielder = function()
+    indexed_yielder = function()
       for out_index = 1, n do
         local i = n - (out_index - 1)
         local v = a[i]
@@ -190,7 +261,7 @@ local function iterator_from_vanishing_array(a, n, reversed)
       end
     end
   else
-    yielder = function()
+    indexed_yielder = function()
       for i = 1, n do
         local v = a[i]
         a[i] = nil
@@ -199,15 +270,7 @@ local function iterator_from_vanishing_array(a, n, reversed)
     end
   end
 
-  return iterator_from_indexed_yielder(yielder)
-end
-
-local function seq_from_indexed_yielder(yielder)
-  return Sqib.Seq:new {
-    iterate = function()
-      return iterator_from_indexed_yielder(yielder)
-    end
-  }
+  return iterator_from_indexed_yielder(indexed_yielder)
 end
 
 -- Sqib:from(v) packaged as a selector.
@@ -469,10 +532,24 @@ end
 -- `iterate` is used in a construction similar to `for _, v in iterate() do ... end` and has a similar contract to the
 -- built-in `ipairs()` or `pairs()` functions.
 --
--- The iteration is expected to produce each successive element of the represented sequence by returning
+-- The iteration is expected to produce each successive element of the represented sequence by returning either:
 --
 -- * a pair `_, v`, where `_` is any non-`nil` value and `v` is the next element value, or
 -- * `nil`, signaling the end of the sequence.
+--
+--    function example_iterate(start, limit)
+--      local i = start - 1
+--
+--      return function()
+--        if i < limit then
+--          i = i + 1
+--          return true, i
+--        end
+--      end
+--    end
+--
+--    local seq = Sqib:from_iterate(example_iterate, 10, 13)
+--    -- sequence is 10, 11, 12, 13
 --
 -- The index value produced by the iterator need not be in any particular order; the requirement is only that the index
 -- value be non-`nil` when a value is being returned or `nil` once the sequence is exhausted. The `Sqib.Seq` returned
@@ -480,12 +557,15 @@ end
 -- `Sqib.Seq:iterate()`.
 --
 -- @param iterate A function which returns an iterator function.
+-- @param[opt] ... Parameters that will be passed to `iterate` at the beginning of iteration.
 -- @return A new `Sqib.Seq` based on the abstract sequence traversed by `iterate`, with renumbered indexes.
-function Sqib:from_iterate(iterate)
+function Sqib:from_iterate(iterate, ...)
+  local bound_iterate = bind(iterate, ...)
+
   return seq_from_indexed_yielder(
     function()
       local out_index = 0
-      for _, v in iterate() do
+      for _, v in bound_iterate() do
         out_index = out_index + 1
         yield(out_index, v)
       end
@@ -499,6 +579,30 @@ end
 -- @return A new `Sqib:Seq` based on the elements of `t`.
 function Sqib:from_packed(t)
   return seq_from_packed(t)
+end
+
+--- Returns a `Sqib.Seq` based on the supplied yielder function.
+--
+-- The function `yielder` is expected to call `coroutine.yield(v)` once for each successive value `v` in the iteration.
+-- `yielder` is called from a coroutine using the supplied parameters, if any, at the beginning of the iteration.
+--
+--    function example_yielder(start, limit)
+--      for i = start, limit do
+--        for j = start, limit do
+--          coroutine.yield("(" .. i .. "," .. j .. ")")
+--        end
+--      end
+--    end
+--
+--    local seq = Sqib:from_yielder(example_yielder, 1, 2)
+--    -- seq is "(1,1)", "(1,2)", "(2,1)", "(2,2)"
+--
+-- @param yielder A function which returns an iterator function.
+-- @param[opt] ... Parameters that will be passed to `iterate` at the beginning of iteration.
+-- @return A new `Sqib.Seq` based on the abstract sequence traversed by `iterate`, with renumbered indexes.
+function Sqib:from_yielder(yielder, ...)
+  local bound_yielder = bind(yielder, ...)
+  return seq_from_unindexed_yielder(bound_yielder)
 end
 
 --- Returns a `Sqib.Seq` over the supplied sequence of parameters.
