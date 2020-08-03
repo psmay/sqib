@@ -726,6 +726,45 @@ function Sqib.Seq:new(o)
   return o
 end
 
+--- Returns whether all elements of this sequence satisfy a predicate.
+--
+-- If this sequence is empty, returns `true`.
+--
+-- @param predicate A function `(v, i)` that returns true if the current element satisfies a condition or false
+-- otherwise.
+-- @return `true` if all elements of this sequence satisfy `predicate`, or `false` otherwise.
+function Sqib.Seq:all(predicate)
+  for i, v in self:iterate() do
+    if not predicate(v, i) then
+      return false
+    end
+  end
+  return true
+end
+
+--- Returns whether this sequence contains any elements or contains any elements that satisfy a predicate.
+--
+-- If this sequence is empty, returns `false`.
+--
+-- @param[opt] predicate A function `(v, i)` that returns true if the current element satisfies a condition or false
+-- otherwise.
+-- @return If `predicate` is supplied, `true` if any element in this sequence satisfies `predicate`, or `false`
+-- otherwise. If `predicate` is omitted, `true` if this sequence contains any elements, or `false` otherwise.
+function Sqib.Seq:any(predicate)
+  if predicate == nil then
+    for i, v in self:iterate() do
+      return true
+    end
+  else
+    for i, v in self:iterate() do
+      if predicate(v, i) then
+        return true
+      end
+    end
+  end
+  return false
+end
+
 --- Produces a `Sqib.Seq` consisting of this sequence followed by the specified elements.
 --
 -- @param ... Elements to append to this sequence.

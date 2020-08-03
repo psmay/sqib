@@ -1310,6 +1310,111 @@ describe(
 --
 
 describe(
+  "Seq:all()",
+  function()
+    it(
+      "returns true for an empty sequence",
+      function()
+        assert.True(
+          Sqib.empty():all(
+            function()
+              return false
+            end
+          )
+        )
+      end
+    )
+    it(
+      "returns true if all satisfy predicate",
+      function()
+        local last_tested
+        local seq = Sqib.over(0, 1, 2, 3, 4)
+        assert.True(
+          seq:all(
+            function(v)
+              last_tested = v
+              return type(v) == "number"
+            end
+          )
+        )
+        assert.equal(4, last_tested)
+      end
+    )
+    it(
+      "returns false at the first element that does not satisfy predicate",
+      function()
+        local last_tested
+        local seq = Sqib.over(0, 1, 2, 3, 4)
+        assert.False(
+          seq:all(
+            function(v)
+              last_tested = v
+              return v < 2
+            end
+          )
+        )
+        assert.equal(2, last_tested)
+      end
+    )
+  end
+)
+
+describe(
+  "Seq:any()",
+  function()
+    it(
+      "without predicate, returns false for an empty sequence",
+      function()
+        assert.False(Sqib.empty():any())
+      end
+    )
+    it(
+      "with predicate, returns false for an empty sequence",
+      function()
+        assert.False(
+          Sqib.empty():any(
+            function(v)
+              return true
+            end
+          )
+        )
+      end
+    )
+    it(
+      "without predicate, returns true on first element",
+      function()
+        local last_mapped
+        local seq =
+          Sqib.over(0, 1, 2, 3, 4):map(
+          function(v)
+            last_mapped = v
+            return v
+          end
+        )
+        assert.True(seq:any())
+        assert.equal(0, last_mapped)
+      end
+    )
+    it(
+      "with predicate, returns true on first element that satisfies predicate",
+      function()
+        local last_tested
+        local seq = Sqib.over(0, 1, 2, 3, 4)
+        assert.True(
+          seq:any(
+            function(v)
+              last_tested = v
+              return v >= 2
+            end
+          )
+        )
+        assert.equal(2, last_tested)
+      end
+    )
+  end
+)
+
+describe(
   "Seq:append()",
   function()
     it(
