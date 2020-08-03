@@ -33,10 +33,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -- @author psmay
 -- @license MIT
 -- @copyright © 2020 psmay
--- @release 0.3.0-aa-20200802a
+-- @release 0.3.0-aa-20200803a
 
 local Sqib = {
-  _VERSION = "0.3.0-aa-20200802a"
+  _VERSION = "0.3.0-aa-20200803a"
 }
 
 --
@@ -793,6 +793,33 @@ function Sqib.Seq:concat(...)
   end
 end
 
+--- Copies all elements of this sequence into an existing array or object.
+--
+-- The first element of this sequence is copied to `a[start_index]`, the second to `a[start_index + 1]`, and so on. Any
+-- values already in these positions are overwritten.
+--
+-- @param a An array or array-like object into which elements will be copied.
+-- @param[opt=1] start_index The first index of `a` to use for copying elements. If provided, this must be an integer.
+-- The value need not be positive (the caveats of using non-1-based arrays in Lua are well documented elsewhere).
+-- @return The number of elements copied. (The copied elements are `a[start_index]` through `a[start_index - 1 + <number
+-- of elements copied>]`.
+function Sqib.Seq:copy_into_array(a, start_index)
+  if start_index == nil then
+    start_index = 1
+  elseif type(start_index) ~= "number" or math.floor(start_index) ~= start_index then
+    error("start_index must be an integer")
+  end
+
+  local offset = start_index - 1
+  local i = 0
+  for _, v in self:iterate() do
+    i = i + 1
+    a[offset + i] = v
+  end
+
+  return i
+end
+
 --- Counts the number of elements, or the number of elements that satisfy a predicate, in this `Sqib.Seq`.
 --
 -- @param[opt] predicate A function `(v, i)` that returns true if the current element satisfies a condition or false
@@ -1290,16 +1317,10 @@ end
 -- copied.
 function Sqib.Seq:to_array(include_length)
   local copy = {}
-  local q = self:iterate()
-
-  local i = 0
-  for _, v in q do
-    i = i + 1
-    copy[i] = v
-  end
+  local n = self:copy_into_array(copy)
 
   if include_length then
-    return copy, i
+    return copy, n
   else
     return copy
   end

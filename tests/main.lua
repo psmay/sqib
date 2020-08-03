@@ -1466,6 +1466,60 @@ describe(
 )
 
 describe(
+  "Seq:copy_into_array()",
+  function()
+    it(
+      "when copying empty doesn't change the destination",
+      function()
+        local a = {0, 0, 0}
+        Sqib.empty():copy_into_array(a)
+        assert.same({0, 0, 0}, a)
+      end
+    )
+    it(
+      "when copying elements doesn't change elements afterward",
+      function()
+        local a = {0, 0, 0}
+        Sqib.over("q", "w"):copy_into_array(a)
+        assert.same({"q", "w", 0}, a)
+      end
+    )
+    it(
+      "when copying same number of elements overwrites whole array",
+      function()
+        local a = {0, 0, 0}
+        Sqib.over("q", "w", "e"):copy_into_array(a)
+        assert.same({"q", "w", "e"}, a)
+      end
+    )
+    it(
+      "when copying more elements overwrites whole array",
+      function()
+        local a = {0, 0, 0}
+        Sqib.over("q", "w", "e", "r"):copy_into_array(a)
+        assert.same({"q", "w", "e", "r"}, a)
+      end
+    )
+    it(
+      "when copying starts after 1 copy still works",
+      function()
+        local a = {0, 0, 0}
+        Sqib.over("q", "w", "e"):copy_into_array(a, 3)
+        assert.same({0, 0, "q", "w", "e"}, a)
+      end
+    )
+    it(
+      "when copying starts before 1 copy still works",
+      function()
+        local a = {0, 0, 0}
+        Sqib.over("q", "w", "e"):copy_into_array(a, -1)
+        assert.same({[-1] = "q", [0] = "w", "e", 0, 0}, a)
+      end
+    )
+  end
+)
+
+describe(
   "Seq:count()",
   function()
     it(
