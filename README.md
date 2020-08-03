@@ -13,13 +13,22 @@ Synopsis
     local seq = Sqib.from_packed({ n=6, 2, 4, 6, 8, 10, 12 })
     -- From array (discards trailing nils)
     local seq = Sqib.from_array({ 2, 4, 6, 8, 10, 12 })
-    -- From an existing iterate function (NB: Each iteration should return i, v)
-    local seq = Sqib.from_iterate(function() return ipairs({ 2, 4, 6, 8, 10, 12 }) end)
+	-- From a yielding function
+	local seq = Sqib.from_yielder(function()
+		for i=2,12,2 do
+			-- Produce one element at a time using coroutine.yield(i)
+			coroutine.yield(i)
+		end
+	end)
 
     -- If it's an object that `Sqib.from()` knows how to detect, you can use it instead
     local seq = Sqib.from({ n=6, 2, 4, 6, 8, 10, 12 })
     local seq = Sqib.from({ 2, 4, 6, 8, 10, 12 })
-    local seq = Sqib.from(function() return ipairs({ 2, 4, 6, 8, 10, 12 }) end)
+	local seq = Sqib.from(function()
+		for i=2,12,2 do
+			coroutine.yield(i)
+		end
+	end)
 
     -- Apply operations fluently
     local result_seq = seq
@@ -38,8 +47,7 @@ Synopsis
     end
 
     -- Do a bunch of the above without intermediate variables
-    local result_packed = Sqib
-        :over(2, 4, 6, 8, 10, 12)
+    local result_packed = Sqib.over(2, 4, 6, 8, 10, 12)
         :map(function(n) return n / 2 end)
         :filter(function(n) return n % 2 end)
         :pack()
