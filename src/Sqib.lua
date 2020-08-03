@@ -158,6 +158,10 @@ end
 local function noop()
 end
 
+local function is_integer(n)
+  return type(n) == "number" and n == math.floor(n)
+end
+
 -- Wraps a function to pre-set its first parameters.
 --
 --    ff = bind(f, parameter1, parameter2)
@@ -716,7 +720,7 @@ end
 -- omitted, the result selector defaults to returning a packed list (i.e. by setting `a.n` to `n` and returning `a`).
 -- @return A `Sqib.Seq` that iterates over this sequence `block_size` elements at a time.
 function Sqib.Seq:batch(block_size, result_selector)
-  if type(block_size) ~= "number" or (block_size < 1) or (block_size ~= math.floor(block_size)) then
+  if (not is_integer(block_size)) or (block_size < 1) then
     error("block_size must be a positive integer")
   end
 
@@ -806,7 +810,7 @@ end
 function Sqib.Seq:copy_into_array(a, start_index)
   if start_index == nil then
     start_index = 1
-  elseif type(start_index) ~= "number" or math.floor(start_index) ~= start_index then
+  elseif not is_integer(start_index) then
     error("start_index must be an integer")
   end
 
