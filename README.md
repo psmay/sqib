@@ -13,7 +13,9 @@ Synopsis
     local seq = Sqib.from_packed({ n=6, 2, 4, 6, 8, 10, 12 })
     -- From array (discards trailing nils)
     local seq = Sqib.from_array({ 2, 4, 6, 8, 10, 12 })
-    -- From a yielding function
+    -- From array with explicit length (preserves trailing nils)
+    local seq = Sqib.from_array({ 2, 4, 6, 8, 10, 12 }, 6)
+    -- From a yielding function (a simple way to get from a for loop to a sequence)
     local seq = Sqib.from_yielder(function()
       for i=2,12,2 do
         -- Produce one element at a time using coroutine.yield(i)
@@ -22,8 +24,12 @@ Synopsis
     end)
 
     -- If it's an object that `Sqib.from()` knows how to detect, you can use it instead
+
+    -- From a packed list (preserves trailing nils)
     local seq = Sqib.from({ n=6, 2, 4, 6, 8, 10, 12 })
+    -- From array (discards trailing nils)
     local seq = Sqib.from({ 2, 4, 6, 8, 10, 12 })
+    -- From a yielding function
     local seq = Sqib.from(function()
       for i=2,12,2 do
         coroutine.yield(i)
@@ -65,11 +71,12 @@ You might use this library if you want to do functional things with sequences an
 
 *   Functional considerations
     *   **You believe nil is a real value.** Iteration over a sequence won't accidentally stop if it hits a `nil` element.
+        *   (Due the implementation of the Lua's unary `#` operator, trailing `nil`s from an array are dropped if no explicit length is specified. To work around this, specify a length parameter on `from_array()` or set the `n` field to the length to make the array a packed list.)
     *   **You want to do things with sequences descriptively, without worrying about the details.** In many cases, activities such as mapping, filtering, and sorting are easier to understand, less verbose, and just less hairy with this module than the equivalent `for` loop.
     *   **You don't want to modify the original.** As a rule, operations on sequences don't mutate their source.
     *   **You value deferred rather than instant execution.** In general, a sequence object returned by a method on another sequence object generally won't iterate over and process its source until it is iterated itself. (`force()` is an intentional exception.) Even operations that require a copy of the entire sequence (such as `sorted()` and `reversed()`) aren't actually copied until requested for iteration.
-    *   **You want to apply extremely flexible sorting.** `Sqib`'s `sorted()` method directly supports selector functions (i.e. "sort by" behavior), compare functions, optional descending order, and optional stable sorting. Additional orderings can be specified (i.e. "then by" behavior) to break ties, each with their own parameters. And the original sequence is not modified in place.
-    *   **You want sequences to do new tricks.** New methods can be patched onto the `Sqib.Seq` type if you need something specific not already covered.
+    *   **You want to apply extremely flexible sorting.** The `sorted()` method directly supports selector functions (i.e. "sort by" behavior), compare functions, optional descending order, and optional stable sorting. Additional orderings can be specified (i.e. "then by" behavior) to break ties, each with their own parameters. And the original sequence is not modified in place.
+    *   **You want sequences to do new tricks.** New methods can be patched onto the `Sqib.Seq` type if you need something specific not already covered, or the `call()` method can be used to apply a function fluently without modifying the table.
 *   Installation considerations
     *   **You don't want to install anything else.** This module has no external dependencies.
     *   **You want to be able to drop a file in instead of dealing with a proper package manager.** This module is designed for an environment where using LuaRocks isn't practical.
