@@ -7,19 +7,19 @@ Synopsis
     -- Get a Sqib sequence
 
     -- From parameters (preserves trailing nils)
-    local seq = Sqib:over(2, 4, 6, 8, 10, 12)
+    local seq = Sqib.over(2, 4, 6, 8, 10, 12)
 
     -- From a packed list (preserves trailing nils)
-    local seq = Sqib:from_packed({ n=6, 2, 4, 6, 8, 10, 12 })
+    local seq = Sqib.from_packed({ n=6, 2, 4, 6, 8, 10, 12 })
     -- From array (discards trailing nils)
-    local seq = Sqib:from_array({ 2, 4, 6, 8, 10, 12 })
+    local seq = Sqib.from_array({ 2, 4, 6, 8, 10, 12 })
     -- From an existing iterate function (NB: Each iteration should return i, v)
-    local seq = Sqib:from_iterate(function() return ipairs({ 2, 4, 6, 8, 10, 12 }) end)
+    local seq = Sqib.from_iterate(function() return ipairs({ 2, 4, 6, 8, 10, 12 }) end)
 
-    -- If it's an object that `Sqib:from()` knows how to detect, you can use it instead
-    local seq = Sqib:from({ n=6, 2, 4, 6, 8, 10, 12 })
-    local seq = Sqib:from({ 2, 4, 6, 8, 10, 12 })
-    local seq = Sqib:from(function() return ipairs({ 2, 4, 6, 8, 10, 12 }) end)
+    -- If it's an object that `Sqib.from()` knows how to detect, you can use it instead
+    local seq = Sqib.from({ n=6, 2, 4, 6, 8, 10, 12 })
+    local seq = Sqib.from({ 2, 4, 6, 8, 10, 12 })
+    local seq = Sqib.from(function() return ipairs({ 2, 4, 6, 8, 10, 12 }) end)
 
     -- Apply operations fluently
     local result_seq = seq
