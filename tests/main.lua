@@ -884,6 +884,58 @@ describe(
 )
 
 describe(
+  "Sqib.from_array_slice()",
+  function()
+    it(
+      "has the correct contents for an empty sequence",
+      function()
+        local seq = Sqib.from_array_slice({}, -1, -2)
+        assert.same(dump_params(), dump_sqib(seq))
+      end
+    )
+    it(
+      "has the correct contents for a slice of non-nils",
+      function()
+        local seq = Sqib.from_array_slice({0, 2, 4, 6, 8}, 2, 4)
+        assert.same(dump_params(2, 4, 6), dump_sqib(seq))
+      end
+    )
+    it(
+      "has the correct contents for a slice with a leading nil",
+      function()
+        local seq = Sqib.from_array_slice({0, nil, 4, 6, 8}, 2, 4)
+        assert.same(dump_params(nil, 4, 6), dump_sqib(seq))
+      end
+    )
+    it(
+      "has the correct contents for a slice with an inner nil",
+      function()
+        local seq = Sqib.from_array_slice({0, 2, nil, 6, 8}, 2, 4)
+        assert.same(dump_params(2, nil, 6), dump_sqib(seq))
+      end
+    )
+    it(
+      "has the correct contents for a slice with a trailing nil",
+      function()
+        local seq = Sqib.from_array_slice({0, 2, 4, nil, 8}, 2, 4)
+        assert.same(dump_params(2, 4, nil), dump_sqib(seq))
+      end
+    )
+    it(
+      "plays nicely with non-positive indexes",
+      function()
+        local a = {[-3] = "q", [-2] = "w", [-1] = "e", [0] = "r", "t", "y"}
+        assert.same(dump_params("w", "e", "r"), dump_sqib(Sqib.from_array_slice(a, -2, 0)))
+        assert.same(dump_params("e", "r", "t", "y"), dump_sqib(Sqib.from_array_slice(a, -1, 2)))
+        assert.same(dump_params(nil, "q", "w", "e"), dump_sqib(Sqib.from_array_slice(a, -4, -1)))
+        assert.same(dump_params(nil, "q", "w", "e", "r", "t", "y", nil), dump_sqib(Sqib.from_array_slice(a, -4, 3)))
+        assert.same(dump_params(), dump_sqib(Sqib.from_array_slice(a, -2, -3)))
+      end
+    )
+  end
+)
+
+describe(
   "Sqib.from_iterate()",
   function()
     it(

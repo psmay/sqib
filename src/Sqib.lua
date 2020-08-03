@@ -371,27 +371,43 @@ local function seq_from_pairs(t, result_selector)
   )
 end
 
-local function seq_from_array(a, n)
-  if n ~= nil then
-    if type(n) ~= "number" then
-      error("Creating sequence from array failed; n is " .. type(n) .. "; expected number or nil")
+local function iterator_from_array_slice(a, start, limit)
+  -- Caller must ensure that start and limit are integers
+  local offset = start - 1
+  local adjusted_limit = limit - offset
+
+  return iterator_from_indexed_yielder(
+    function()
+      for i = 1, adjusted_limit do
+        yield(i, a[offset + i])
+      end
     end
-    return seq_from_indexed_yielder(
-      function()
-        for i = 1, n do
-          yield(i, a[i])
-        end
+  )
+end
+
+local function seq_from_array_slice(a, start, limit)
+  -- Caller must ensure that start and limit are integers
+  if start <= limit then
+    return Sqib.Seq:new {
+      iterate = function()
+        return iterator_from_array_slice(a, start, limit)
       end
-    )
+    }
   else
-    return seq_from_indexed_yielder(
-      function()
-        local count = #a
-        for i = 1, count do
-          yield(i, a[i])
-        end
+    return Sqib.empty()
+  end
+end
+
+local function seq_from_array(a, n)
+  -- Caller must ensure that n is nil or an integer
+  if n == nil then
+    return Sqib.Seq:new {
+      iterate = function()
+        return iterator_from_array_slice(a, 1, #a)
       end
-    )
+    }
+  else
+    return seq_from_array_slice(a, 1, n)
   end
 end
 
@@ -524,6 +540,27 @@ end
 -- `a`.
 function Sqib.from_array(a, n)
   return seq_from_array(a, n)
+end
+
+--- Returns a `Sqib.Seq` based on the elements of the array `a` from the index `start` to the index `limit`.
+--
+-- @param a An array on which to base the new sequence.
+-- @param start The inclusive index of `a` at which to start the sequence. Must be an integer, but need not be positive.
+-- @param limit The inclusive index of `a` at which to end the sequence. Must be an integer, but need not be positive.
+-- @return A `Sqib.Seq` consisting of the elements of `a` from `a[start]` to `a[limit]`, inclusive, or an empty sequence
+-- if `start` is greater than `limit`.
+function Sqib.from_array_slice(a, start, limit)
+  if not is_integer(start) then
+    error("Start index must be an integer")
+  elseif not is_integer(limit) then
+    error("Index limit must be an integer")
+  end
+
+  if start > limit then
+    return Sqib.empty()
+  else
+    return seq_from_array_slice(a, start, limit)
+  end
 end
 
 --- Returns a `Sqib.Seq` based on the supplied iterate function.
