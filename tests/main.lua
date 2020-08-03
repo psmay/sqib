@@ -884,6 +884,58 @@ describe(
 )
 
 describe(
+  "Sqib.from_array_slice()",
+  function()
+    it(
+      "has the correct contents for an empty sequence",
+      function()
+        local seq = Sqib.from_array_slice({}, -1, -2)
+        assert.same(dump_params(), dump_sqib(seq))
+      end
+    )
+    it(
+      "has the correct contents for a slice of non-nils",
+      function()
+        local seq = Sqib.from_array_slice({0, 2, 4, 6, 8}, 2, 4)
+        assert.same(dump_params(2, 4, 6), dump_sqib(seq))
+      end
+    )
+    it(
+      "has the correct contents for a slice with a leading nil",
+      function()
+        local seq = Sqib.from_array_slice({0, nil, 4, 6, 8}, 2, 4)
+        assert.same(dump_params(nil, 4, 6), dump_sqib(seq))
+      end
+    )
+    it(
+      "has the correct contents for a slice with an inner nil",
+      function()
+        local seq = Sqib.from_array_slice({0, 2, nil, 6, 8}, 2, 4)
+        assert.same(dump_params(2, nil, 6), dump_sqib(seq))
+      end
+    )
+    it(
+      "has the correct contents for a slice with a trailing nil",
+      function()
+        local seq = Sqib.from_array_slice({0, 2, 4, nil, 8}, 2, 4)
+        assert.same(dump_params(2, 4, nil), dump_sqib(seq))
+      end
+    )
+    it(
+      "plays nicely with non-positive indexes",
+      function()
+        local a = {[-3] = "q", [-2] = "w", [-1] = "e", [0] = "r", "t", "y"}
+        assert.same(dump_params("w", "e", "r"), dump_sqib(Sqib.from_array_slice(a, -2, 0)))
+        assert.same(dump_params("e", "r", "t", "y"), dump_sqib(Sqib.from_array_slice(a, -1, 2)))
+        assert.same(dump_params(nil, "q", "w", "e"), dump_sqib(Sqib.from_array_slice(a, -4, -1)))
+        assert.same(dump_params(nil, "q", "w", "e", "r", "t", "y", nil), dump_sqib(Sqib.from_array_slice(a, -4, 3)))
+        assert.same(dump_params(), dump_sqib(Sqib.from_array_slice(a, -2, -3)))
+      end
+    )
+  end
+)
+
+describe(
   "Sqib.from_iterate()",
   function()
     it(
@@ -1258,6 +1310,111 @@ describe(
 --
 
 describe(
+  "Seq:all()",
+  function()
+    it(
+      "returns true for an empty sequence",
+      function()
+        assert.True(
+          Sqib.empty():all(
+            function()
+              return false
+            end
+          )
+        )
+      end
+    )
+    it(
+      "returns true if all satisfy predicate",
+      function()
+        local last_tested
+        local seq = Sqib.over(0, 1, 2, 3, 4)
+        assert.True(
+          seq:all(
+            function(v)
+              last_tested = v
+              return type(v) == "number"
+            end
+          )
+        )
+        assert.equal(4, last_tested)
+      end
+    )
+    it(
+      "returns false at the first element that does not satisfy predicate",
+      function()
+        local last_tested
+        local seq = Sqib.over(0, 1, 2, 3, 4)
+        assert.False(
+          seq:all(
+            function(v)
+              last_tested = v
+              return v < 2
+            end
+          )
+        )
+        assert.equal(2, last_tested)
+      end
+    )
+  end
+)
+
+describe(
+  "Seq:any()",
+  function()
+    it(
+      "without predicate, returns false for an empty sequence",
+      function()
+        assert.False(Sqib.empty():any())
+      end
+    )
+    it(
+      "with predicate, returns false for an empty sequence",
+      function()
+        assert.False(
+          Sqib.empty():any(
+            function(v)
+              return true
+            end
+          )
+        )
+      end
+    )
+    it(
+      "without predicate, returns true on first element",
+      function()
+        local last_mapped
+        local seq =
+          Sqib.over(0, 1, 2, 3, 4):map(
+          function(v)
+            last_mapped = v
+            return v
+          end
+        )
+        assert.True(seq:any())
+        assert.equal(0, last_mapped)
+      end
+    )
+    it(
+      "with predicate, returns true on first element that satisfies predicate",
+      function()
+        local last_tested
+        local seq = Sqib.over(0, 1, 2, 3, 4)
+        assert.True(
+          seq:any(
+            function(v)
+              last_tested = v
+              return v >= 2
+            end
+          )
+        )
+        assert.equal(2, last_tested)
+      end
+    )
+  end
+)
+
+describe(
   "Seq:append()",
   function()
     it(
@@ -1460,6 +1617,60 @@ describe(
       function()
         local seq = Sqib.over("q", "w", "e")
         assert.same(dump_params("q", "w", "e", "q", "w", "e", "q", "w", "e"), dump_sqib(seq:concat(seq, seq)))
+      end
+    )
+  end
+)
+
+describe(
+  "Seq:copy_into_array()",
+  function()
+    it(
+      "when copying empty doesn't change the destination",
+      function()
+        local a = {0, 0, 0}
+        Sqib.empty():copy_into_array(a)
+        assert.same({0, 0, 0}, a)
+      end
+    )
+    it(
+      "when copying elements doesn't change elements afterward",
+      function()
+        local a = {0, 0, 0}
+        Sqib.over("q", "w"):copy_into_array(a)
+        assert.same({"q", "w", 0}, a)
+      end
+    )
+    it(
+      "when copying same number of elements overwrites whole array",
+      function()
+        local a = {0, 0, 0}
+        Sqib.over("q", "w", "e"):copy_into_array(a)
+        assert.same({"q", "w", "e"}, a)
+      end
+    )
+    it(
+      "when copying more elements overwrites whole array",
+      function()
+        local a = {0, 0, 0}
+        Sqib.over("q", "w", "e", "r"):copy_into_array(a)
+        assert.same({"q", "w", "e", "r"}, a)
+      end
+    )
+    it(
+      "when copying starts after 1 copy still works",
+      function()
+        local a = {0, 0, 0}
+        Sqib.over("q", "w", "e"):copy_into_array(a, 3)
+        assert.same({0, 0, "q", "w", "e"}, a)
+      end
+    )
+    it(
+      "when copying starts before 1 copy still works",
+      function()
+        local a = {0, 0, 0}
+        Sqib.over("q", "w", "e"):copy_into_array(a, -1)
+        assert.same({[-1] = "q", [0] = "w", "e", 0, 0}, a)
       end
     )
   end
