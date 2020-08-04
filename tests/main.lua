@@ -1,5 +1,7 @@
 -- busted --lua=lua5.1 tests/main.lua
 
+-- luacheck: std lua51+busted
+
 local Sqib = require "Sqib"
 
 --
@@ -102,7 +104,7 @@ local function deepish_equal(a, b)
       end
     end
 
-    for k, v in pairs(b) do
+    for k, _ in pairs(b) do
       if not seen[k] then
         return false
       end
@@ -114,8 +116,8 @@ local function deepish_equal(a, b)
 end
 
 -- The operation provided here is a full disjunction on not two sets but two multisets; multiplicities are accounted
--- for. For example, if `a` contains 1, 1, 1, 2, 2 and `b` contains 1, 1, 2, 2, 2, then `both` will contain 1, 1, 2, 2, `a_only`
--- will contain 1, and `b_only` will contain 2.
+-- for. For example, if `a` contains 1, 1, 1, 2, 2 and `b` contains 1, 1, 2, 2, 2, then `both` will contain 1, 1, 2, 2,
+-- `a_only` will contain 1, and `b_only` will contain 2.
 --
 -- The output sequencing is deterministic.
 --
@@ -129,16 +131,6 @@ local function dump_full_disjunction(dump_a, dump_b, join_on, keep_both_sides)
   -- This algorithm is not suitable for production code, but this is a test.
 
   local results = {}
-
-  local function remove_row(rows, v)
-    for i = 1, #rows do
-      if join_on(rows[i].v, v) then
-        table.remove(rows, i)
-        return true
-      end
-    end
-    return false
-  end
 
   for i = 1, dump_a.n do
     local av = dump_a[i].v
@@ -447,7 +439,8 @@ describe(
       end
     )
     it(
-      "with test function nillable_ipairs() (with length parameter), returns the expected result for a sequence with an trailing nil",
+      "with test function nillable_ipairs() (with length parameter), " ..
+        "returns the expected result for a sequence with an trailing nil",
       function()
         local dump =
           dump_iter(
@@ -1011,7 +1004,8 @@ describe(
       end
     )
     it(
-      "with test function nillable_ipairs() (with length parameter), returns the expected result for a sequence with an trailing nil",
+      "with test function nillable_ipairs() (with length parameter), " ..
+        "returns the expected result for a sequence with an trailing nil",
       function()
         local seq =
           Sqib.from_iterate(
@@ -1373,7 +1367,7 @@ describe(
       function()
         assert.False(
           Sqib.empty():any(
-            function(v)
+            function()
               return true
             end
           )
@@ -1769,7 +1763,6 @@ describe(
     )
 
     local function string_to_char_array(v)
-      local len = string.len(v)
       local t = {}
       for i = 1, string.len(v) do
         t[i] = string.sub(v, i, i)
@@ -1825,26 +1818,30 @@ describe(
       end
     )
     it(
-      "(convert_result explicitly true) given a Seq of strings and a selector that returns a Seq, produces the expected result",
+      "(convert_result explicitly true) " ..
+        "given a Seq of strings and a selector that returns a Seq, produces the expected result",
       function()
         assert.same(expected, dump_sqib(seq_of_strings:flat_map(string_to_char_seq, true)))
       end
     )
     it(
-      "(convert_result explicitly false) given a Seq of strings and a selector that returns a Seq, produces the expected result",
+      "(convert_result explicitly false) " ..
+        "given a Seq of strings and a selector that returns a Seq, produces the expected result",
       function()
         assert.same(expected, dump_sqib(seq_of_strings:flat_map(string_to_char_seq, false)))
       end
     )
 
     it(
-      "(convert_result default) given a Seq of strings and a selector that returns an array, produces the expected result",
+      "(convert_result default) " ..
+        "given a Seq of strings and a selector that returns an array, produces the expected result",
       function()
         assert.same(expected, dump_sqib(seq_of_strings:flat_map(string_to_char_array)))
       end
     )
     it(
-      "(convert_result explicitly true) given a Seq of strings and a selector that returns an array, produces the expected result",
+      "(convert_result explicitly true) " ..
+        "given a Seq of strings and a selector that returns an array, produces the expected result",
       function()
         assert.same(expected, dump_sqib(seq_of_strings:flat_map(string_to_char_array, true)))
       end
@@ -1975,8 +1972,7 @@ describe(
       function()
         assert.has_error(
           function()
-            local hash =
-              Sqib.over("a", "b", "c", "a"):pairs_to_hash(
+            Sqib.over("a", "b", "c", "a"):pairs_to_hash(
               function(v)
                 return v, v
               end
@@ -2550,7 +2546,7 @@ describe(
       function()
         assert.has_error(
           function()
-            local hash = Sqib.over("a", "b", "c", "a"):to_hash()
+            Sqib.over("a", "b", "c", "a"):to_hash()
           end
         )
       end
