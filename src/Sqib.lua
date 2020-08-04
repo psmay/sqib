@@ -33,10 +33,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -- @author psmay
 -- @license MIT
 -- @copyright © 2020 psmay
--- @release 0.3.1-aa-20200803a
+-- @release 0.3.1-aa-20200803b
 
 local Sqib = {
-  _VERSION = "0.3.1-aa-20200803a"
+  _VERSION = "0.3.1-aa-20200803b"
 }
 
 --
@@ -62,28 +62,6 @@ local function _nt_unescape(ev)
   end
 end
 
--- unescape a nil-escaped value, returning true, value if defined or false, nil if undefined
-local function _nt_xunescape(ev)
-  local defined = ev ~= nil
-  local value = defined and _nt_unescape(ev) or nil
-  return defined, value
-end
-
--- get a value from an nt, or nil if not defined
-local function ntget(t, k)
-  return _nt_unescape(t[_nt_escape(k)])
-end
-
--- set a value on an nt
-local function ntset(t, k, v)
-  t[_nt_escape(k)] = _nt_escape(v)
-end
-
--- remove a value on an nt
-local function ntremove(t, k)
-  t[_nt_escape(k)] = nil
-end
-
 -- add a value on an nt, returning true if added or false if key already exists
 local function ntadd(t, k, v)
   local ek = _nt_escape(k)
@@ -104,45 +82,6 @@ local function ntaddselected(t, k, f, ...)
     t[ek] = ev
   end
   return _nt_unescape(ev)
-end
-
--- get a value from an nt, returning true, value if exists or false, nil if not exists
-local function ntxget(t, k)
-  return _nt_xunescape(t[_nt_escape(k)])
-end
-
--- set a value on an nt, returning true, previous_value if previously set or false, nil if not previously set
-local function ntxset(t, k, v)
-  local ek = _nt_escape(k)
-  local ev = t[ek]
-  t[ek] = _nt_escape(v)
-  return _nt_xunescape(ev)
-end
-
--- removes a value on an nt, returning true, previous_value if previously set or false, nil if not previously set
-local function ntxremove(t, k)
-  local ek = _nt_escape(k)
-  local ev = t[ek]
-  t[ek] = nil
-  return _nt_xunescape(ev)
-end
-
--- iterates over the pairs of an nt, to be used in the idiom
---  for i, kv in ntxpairs(nt) do
---    local k, v = unpack(kv)
---    ...
---  end
-local function ntxpairs(t)
-  local out_index = 0
-  local iter, inv, ctl = pairs(t)
-  return function()
-    local ek, ev = iter(inv, ctl)
-    if ek ~= nil then
-      out_index = out_index + 1
-      ctl = ek
-      return out_index, {_nt_unescape(ek), _nt_unescape(ev)}
-    end
-  end
 end
 
 --
@@ -278,19 +217,19 @@ local function iterator_from_vanishing_array(a, n, reversed)
 end
 
 -- Sqib.from(v) packaged as a selector.
-local function selector_seq_from(v, i)
+local function selector_seq_from(v)
   return Sqib.from(v)
 end
 
--- Internal implementation: Given `source`, a @{Sqib.Seq} of @{Sqib.Seq}, returns a @{Sqib.Seq} that is the concatenation
--- of the sequences. No selection or conversion is applied.
+-- Internal implementation: Given `source`, a @{Sqib.Seq} of @{Sqib.Seq}, returns a @{Sqib.Seq} that is the
+-- concatenation of the sequences. No selection or conversion is applied.
 local function flatten(source)
   return seq_from_indexed_yielder(
     function()
       local out_index = 0
 
-      for si, sv in source:iterate() do
-        for i, v in sv:iterate() do
+      for _, sv in source:iterate() do
+        for _, v in sv:iterate() do
           out_index = out_index + 1
           yield(out_index, v)
         end
@@ -324,8 +263,8 @@ local function try_seq_from(x)
   end
 end
 
--- Converts the first `n` elements of `a` to @{Sqib.Seq} using `try_seq_from()`, raising an error if any element fails to
--- convert. Returns the concatenation of the results as a @{Sqib.Seq}.
+-- Converts the first `n` elements of `a` to @{Sqib.Seq} using `try_seq_from()`, raising an error if any element fails
+-- to convert. Returns the concatenation of the results as a @{Sqib.Seq}.
 local function seq_from_all(a, n)
   if type(n) ~= "number" then
     error("Sequence concatenation failed; parameter count is type " .. type(n) .. "; expected number")
@@ -427,14 +366,15 @@ end
 
 do
   -- This is lazy so that it can appear before Sqib.Seq:new() is defined.
-  local get_empty_seq = function()
+  local get_empty_seq
+  get_empty_seq = function()
     local EmptySeq = Sqib.Seq:new()
 
-    function EmptySeq:iterate()
+    function EmptySeq:iterate() -- luacheck: no self
       return noop
     end
 
-    function EmptySeq:count()
+    function EmptySeq:count() -- luacheck: no self
       return 0
     end
 
@@ -724,7 +664,8 @@ Sqib.Seq = {}
 -- The implementation of this method does nothing beyond creating the object and setting the type's index and the
 -- instance's metatable.
 --
--- See the functions of `Sqib` (for example, @{Sqib.from}) for simple ways to create @{Sqib.Seq} objects from actual data.
+-- See the functions of `Sqib` (for example, @{Sqib.from}) for simple ways to create @{Sqib.Seq} objects from actual
+-- data.
 --
 -- @param[opt={}] o A table to convert into this type.
 -- @return `o`, having been converted to this type.
@@ -761,7 +702,7 @@ end
 -- otherwise. If `predicate` is omitted, `true` if this sequence contains any elements, or `false` otherwise.
 function Sqib.Seq:any(predicate)
   if predicate == nil then
-    for i, v in self:iterate() do
+    for _, _ in self:iterate() do -- luacheck: ignore 512
       return true
     end
   else
@@ -846,7 +787,8 @@ end
 
 --- Calls the specified function as if it were a method on this sequence.
 --
--- This is a simple way to call custom sequence operations fluently without assigning them directly to to @{Sqib.Seq} table.
+-- This is a simple way to call custom sequence operations fluently without assigning them directly to to @{Sqib.Seq}
+-- table.
 --
 --    function my_every_n(seq, n)
 --      return seq:filter(function(_,i) return i % n == 0 end)
@@ -866,8 +808,8 @@ end
 
 --- Returns a @{Sqib.Seq} consisting of this sequence followed by the specified additional sequences.
 --
--- @param ... Sequence-like values to be converted to sequences (using the same rules as @{Sqib.from}) and concatenated to
--- this sequence.
+-- @param ... Sequence-like values to be converted to sequences (using the same rules as @{Sqib.from}) and concatenated
+-- to this sequence.
 -- @return A @{Sqib.Seq} consisting of the elements of this sequence followed by the elements of each of the specified
 -- additional sequences.
 -- @raise * When any parameter has no automatic conversion to a sequence.
@@ -920,7 +862,7 @@ function Sqib.Seq:count(predicate)
   local n = 0
 
   if predicate == nil then
-    for i, v in self:iterate() do
+    for _, _ in self:iterate() do
       n = n + 1
     end
   else
@@ -1013,13 +955,13 @@ end
 -- @{Sqib.Seq} (or close enough to one that it can be treated as one). This method exists for the purpose of identifying
 -- an object as a @{Sqib.Seq} in absence of any reliable way to do so in Lua.
 --
--- The `is_sqib_seq` method of @{Sqib.Seq} is specified to always return `true`. This should not be overridden by derived
--- types of @{Sqib.Seq}.
+-- The `is_sqib_seq` method of @{Sqib.Seq} is specified to always return `true`. This should not be overridden by
+-- derived types of @{Sqib.Seq}.
 --
 -- @return `true`.
 -- @see Sqib.Seq:to_sqib_seq
 -- @see Sqib.from
-function Sqib.Seq:is_sqib_seq()
+function Sqib.Seq:is_sqib_seq() -- luacheck: no self
   return true
 end
 
@@ -1032,7 +974,7 @@ end
 -- The index `i` is defined to start at 1 and increase by 1 with each new element.
 --
 -- @return A closure-based (non-stateless) iterator over this sequence.
-function Sqib.Seq:iterate()
+function Sqib.Seq:iterate() -- luacheck: no self
   error("iterate() method is not implemented")
 end
 
@@ -1123,7 +1065,7 @@ function Sqib.Seq:skip(count)
     function()
       local out_index = -count
 
-      for i, v in source:iterate() do
+      for _, v in source:iterate() do
         out_index = out_index + 1
         if out_index >= 1 then
           yield(out_index, v)
@@ -1199,7 +1141,8 @@ do
     end
   end
 
-  --- Returns a new @{Sqib.Seq} that consists of the elements of this sequence sorted according to the specified options.
+  --- Returns a new @{Sqib.Seq} that consists of the elements of this sequence sorted according to the specified
+  -- options.
   --
   -- With no options specified, the call
   --
@@ -1298,7 +1241,7 @@ do
 
       if stable then
         number_of_orderings = number_of_orderings + 1
-        selectors[number_of_orderings] = function(v, i)
+        selectors[number_of_orderings] = function(_, i)
           return i
         end
         compares[number_of_orderings] = function(a, b)
@@ -1313,7 +1256,7 @@ do
       local rows = {}
       local n = 0
       do
-        for i, v in source:iterate() do
+        for _, v in source:iterate() do
           n = n + 1
           local row = {i = n, v = v}
           rows[n] = row
@@ -1343,8 +1286,6 @@ do
         end
       end
 
-      local i = 0
-
       return iterator_from_vanishing_array(rows, n)
     end
 
@@ -1368,7 +1309,7 @@ function Sqib.Seq:take(count)
     function()
       local out_index = 0
 
-      for i, v in source:iterate() do
+      for _, v in source:iterate() do
         out_index = out_index + 1
         if out_index <= count then
           yield(out_index, v)
@@ -1425,7 +1366,7 @@ function Sqib.Seq:times(count)
     function()
       local out_index = 0
 
-      for i = 1, count do
+      for _ = 1, count do
         for _, v in source:iterate() do
           out_index = out_index + 1
           yield(out_index, v)
@@ -1492,8 +1433,8 @@ end
 -- A method named `to_sqib_seq` on any object is assumed (e.g. by `from`) to return a Sqib sequence equivalent to the
 -- object.
 --
--- The `to_sqib_seq` method of @{Sqib.Seq} is specified to always return the implied `self` parameter. This should not be
--- overridden by derived types of @{Sqib.Seq}.
+-- The `to_sqib_seq` method of @{Sqib.Seq} is specified to always return the implied `self` parameter. This should not
+-- be overridden by derived types of @{Sqib.Seq}.
 --
 -- @return `self` (the object on which this method was called).
 -- @see is_sqib_seq
