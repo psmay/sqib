@@ -33,10 +33,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -- @author psmay
 -- @license MIT
 -- @copyright © 2020 psmay
--- @release 0.3.1-aa-20200803b
+-- @release 0.3.1-aa-20200804a
 
 local Sqib = {
-  _VERSION = "0.3.1-aa-20200803b"
+  _VERSION = "0.3.1-aa-20200804a"
 }
 
 --
@@ -97,8 +97,14 @@ end
 local function noop()
 end
 
+local function is_finite_number(x)
+  return type(x) == "number" and not (x ~= x) and x ~= math.huge and x ~= -math.huge
+end
+
 local function is_integer(n)
-  return type(n) == "number" and n == math.floor(n)
+  -- math.floor() seems to return the input value for non-integer "number"s such as inf, -inf, and NaN, so an extra
+  -- check is done first
+  return is_finite_number(n) and n == math.floor(n)
 end
 
 -- Wraps a function to pre-set its first parameters.
@@ -188,8 +194,8 @@ end
 
 -- Iterator over a temporary array, where each element is deleted as it is read.
 local function iterator_from_vanishing_array(a, n, reversed)
-  if type(n) ~= "number" then
-    error("Iterator over vanishing array failed; n is " .. type(n) .. "; expected number")
+  if not is_integer(n) then
+    error("Iterator over vanishing array failed; n must be an integer (got " .. type(n) .. ")")
   end
 
   local indexed_yielder
@@ -251,7 +257,7 @@ local function try_seq_from(x)
       else
         error("to_sqib_seq() returned a value that does not appear to be a Sqib sequence")
       end
-    elseif type(x.n) == "number" then
+    elseif is_integer(x.n) and x.n >= 0 then
       return Sqib.from_packed(x)
     else
       return Sqib.from_array(x)
@@ -266,8 +272,8 @@ end
 -- Converts the first `n` elements of `a` to @{Sqib.Seq} using `try_seq_from()`, raising an error if any element fails
 -- to convert. Returns the concatenation of the results as a @{Sqib.Seq}.
 local function seq_from_all(a, n)
-  if type(n) ~= "number" then
-    error("Sequence concatenation failed; parameter count is type " .. type(n) .. "; expected number")
+  if not is_integer(n) then
+    error("Sequence concatenation failed; parameter count must be an integer (got " .. type(n) .. ")")
   end
   if n <= 0 then
     return Sqib.empty()
@@ -354,8 +360,8 @@ local function seq_from_packed(t)
   return seq_from_indexed_yielder(
     function()
       local n = t.n
-      if type(n) ~= "number" then
-        error("Iterator over packed list failed; n is " .. type(n) .. "; expected number")
+      if not is_integer(n) then
+        error("Iterator over packed list failed; n must be an integer (got " .. type(n) .. ")")
       end
       for i = 1, n do
         yield(i, t[i])
@@ -400,7 +406,7 @@ end
 --     - If `value.to_sqib_seq` exists as a function, the result of `value:to_sqib_seq()` is used.
 --       - If the value `seq` returned by `value:to_sqib_seq()` is not a table, or `seq.is_sqib_seq` is not a function,
 --         or `seq:is_sqib_seq()` does not return true, an error is raised.
---     - Otherwise, if `value.n` exists as a number, the result of @{Sqib.from_packed}(value) is used.
+--     - Otherwise, if `value.n` exists as a nonnegative integer, the result of @{Sqib.from_packed}(value) is used.
 --     - Otherwise, the result of @{Sqib.from_array}(value) is used.
 --  - If `value` is a function, the result of @{Sqib.from_yielder}(value) is used.
 --  - Otherwise, an error is raised.
