@@ -5,6 +5,8 @@
 -- Note: Rendering of nested lists is subject to the issue at <https://github.com/stevedonovan/LDoc/issues/162>. Other
 -- Markdown viewers don't seem to have a problem with it.
 
+dir = "docs/doc"
+
 title = "Sqib documentation"
 project = "Sqib"
 

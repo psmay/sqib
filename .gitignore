@@ -41,6 +41,3 @@ luac.out
 
 # Editor temp files
 *.swp
-
-# ldoc output
-doc
