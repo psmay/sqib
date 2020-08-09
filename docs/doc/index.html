@@ -1,0 +1,1701 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Sqib documentation</title>
+    <link rel="stylesheet" href="ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Sqib</h1>
+
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Class_Sqib_Seq">Class Sqib.Seq </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><strong>Sqib</strong></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>Sqib</code></h1>
+<p>Sqib, a sequence query facility for Lua</p>
+
+<p> <a href="https://github.com/psmay/sqib">This project is available on Github.</a></p>
+<p></p>
+    <h3>Info:</h3>
+    <ul>
+        <li><strong>Copyright</strong>: © 2020 psmay</li>
+        <li><strong>Release</strong>: 0.3.1-aa-20200803b</li>
+        <li><strong>License</strong>: MIT</li>
+        <li><strong>Author</strong>: psmay</li>
+    </ul>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#empty">empty ()</a></td>
+	<td class="summary">Returns a new <a href="index.html#Sqib.Seq">Sqib.Seq</a> containing zero elements.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#from">from (value)</a></td>
+	<td class="summary">Produces a <a href="index.html#Sqib.Seq">Sqib.Seq</a> by guessing the appropriate conversion for <code>value</code>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#from_all">from_all (...)</a></td>
+	<td class="summary">Produces a <a href="index.html#Sqib.Seq">Sqib.Seq</a> by converting each parameter to a <a href="index.html#Sqib.Seq">Sqib.Seq</a> and concatenating the results.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#from_array">from_array (a[, n])</a></td>
+	<td class="summary">Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on an array or its first elements.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#from_array_slice">from_array_slice (a, start, limit)</a></td>
+	<td class="summary">Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the elements of a subsequence of an array between two specified indexes.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#from_iterate">from_iterate (iterate[, ...])</a></td>
+	<td class="summary">Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the supplied iterate function.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#from_keys">from_keys (t)</a></td>
+	<td class="summary">Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the keys of a table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#from_packed">from_packed (t)</a></td>
+	<td class="summary">Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on a packed list.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#from_pairs">from_pairs (t[, result_selector])</a></td>
+	<td class="summary">Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the key-value pairs of a table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#from_values">from_values (t)</a></td>
+	<td class="summary">Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the values of a table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#from_yielder">from_yielder (yielder[, ...])</a></td>
+	<td class="summary">Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the supplied yielder function.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#over">over (...)</a></td>
+	<td class="summary">Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> over the supplied sequence of parameters.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#range">range (start_value, limit_value[, step=1])</a></td>
+	<td class="summary">Returns a new <a href="index.html#Sqib.Seq">Sqib.Seq</a> over the specified range.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#times">times (value, count)</a></td>
+	<td class="summary">Returns a new <a href="index.html#Sqib.Seq">Sqib.Seq</a> that repeats a specified value a specified number of times.</td>
+	</tr>
+</table>
+<h2><a href="#Class_Sqib_Seq">Class Sqib.Seq </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:all">Sqib.Seq:all (predicate)</a></td>
+	<td class="summary">Returns whether all elements of this sequence satisfy a predicate.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:any">Sqib.Seq:any ([predicate])</a></td>
+	<td class="summary">Returns whether this sequence contains any elements or contains any elements that satisfy a predicate.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:append">Sqib.Seq:append (...)</a></td>
+	<td class="summary">Produces a <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of this sequence followed by the specified elements.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:batch">Sqib.Seq:batch (block_size[, result_selector])</a></td>
+	<td class="summary">Produces a <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of this sequence&rsquo;s elements as blocks of a specified number of elements each.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:call">Sqib.Seq:call (f[, ...])</a></td>
+	<td class="summary">Calls the specified function as if it were a method on this sequence.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:concat">Sqib.Seq:concat (...)</a></td>
+	<td class="summary">Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of this sequence followed by the specified additional sequences.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:copy_into_array">Sqib.Seq:copy_into_array (a[, start_index=1])</a></td>
+	<td class="summary">Copies all elements of this sequence into an existing array or object.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:count">Sqib.Seq:count ([predicate])</a></td>
+	<td class="summary">Counts the number of elements, or the number of elements that satisfy a predicate, in this sequence.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:filter">Sqib.Seq:filter (predicate)</a></td>
+	<td class="summary">Filters this sequence to only the elements that satisfy a predicate.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:flat_map">Sqib.Seq:flat_map ([selector[, convert_result=true]])</a></td>
+	<td class="summary">Maps this sequence by applying a sequence-producing selector, then returns a sequence from the concatenated results.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:force">Sqib.Seq:force ()</a></td>
+	<td class="summary">Forces immediate evaluation of this sequence.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:is_sqib_seq">Sqib.Seq:is_sqib_seq ()</a></td>
+	<td class="summary">Returns whether this object should be treated as <a href="index.html#Sqib.Seq">Sqib.Seq</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:iterate">Sqib.Seq:iterate ()</a></td>
+	<td class="summary">Returns a closure-based iterator over this sequence.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:map">Sqib.Seq:map (selector)</a></td>
+	<td class="summary">Maps each element of this sequence by applying a selector.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:new">Sqib.Seq:new ([o={}])</a></td>
+	<td class="summary">The constructor for an abstract <a href="index.html#Sqib.Seq">Sqib.Seq</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:pack">Sqib.Seq:pack ()</a></td>
+	<td class="summary">Copies this sequence into a new packed list.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:pairs_to_hash">Sqib.Seq:pairs_to_hash (pair_selector)</a></td>
+	<td class="summary">Creates a new dictionary-style table using the provided selector to determine each key-value pair.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:reversed">Sqib.Seq:reversed ()</a></td>
+	<td class="summary">Returns a new <a href="index.html#Sqib.Seq">Sqib.Seq</a> that consists of the elements of this sequence in reverse order.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:skip">Sqib.Seq:skip (count)</a></td>
+	<td class="summary">Skips a specified number of elements, then produces the remainder.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:skip_while">Sqib.Seq:skip_while (predicate)</a></td>
+	<td class="summary">Skips all elements while a predicate is satisfied, then produces the remainder.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:sorted">Sqib.Seq:sorted (...)</a></td>
+	<td class="summary">Returns a new <a href="index.html#Sqib.Seq">Sqib.Seq</a> that consists of the elements of this sequence sorted according to the specified
+ options.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:take">Sqib.Seq:take (count)</a></td>
+	<td class="summary">Passes a specified number of elements, then ends the sequence.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:take_while">Sqib.Seq:take_while (predicate)</a></td>
+	<td class="summary">Passes all elements while a predicate is satisfied, then ends the sequence.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:times">Sqib.Seq:times (count)</a></td>
+	<td class="summary">Returns a new <a href="index.html#Sqib.Seq">Sqib.Seq</a> that repeats this entire sequence a specified number of times.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:to_array">Sqib.Seq:to_array ([include_length=false])</a></td>
+	<td class="summary">Copies this sequence into a new array.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:to_hash">Sqib.Seq:to_hash ([key_selector[, value_selector]])</a></td>
+	<td class="summary">Creates a new dictionary-style table using the provided selectors to determine the keys and values.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:to_sqib_seq">Sqib.Seq:to_sqib_seq ()</a></td>
+	<td class="summary">Returns this <a href="index.html#Sqib.Seq">Sqib.Seq</a> object.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:unique">Sqib.Seq:unique ([key_selector])</a></td>
+	<td class="summary">Filters this sequence to distinct elements by including only the first element having a selected key.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sqib.Seq:unpack">Sqib.Seq:unpack ()</a></td>
+	<td class="summary">Returns this entire sequence as a return value list.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "empty"></a>
+    <strong>empty ()</strong>
+    </dt>
+    <dd>
+    Returns a new <a href="index.html#Sqib.Seq">Sqib.Seq</a> containing zero elements.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new, empty <a href="index.html#Sqib.Seq">Sqib.Seq</a>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "from"></a>
+    <strong>from (value)</strong>
+    </dt>
+    <dd>
+    <p>Produces a <a href="index.html#Sqib.Seq">Sqib.Seq</a> by guessing the appropriate conversion for <code>value</code>.</p>
+
+<ul>
+<li>If <code>value</code> is a table,
+
+<ul>
+<li>If <code>value.is_sqib_seq</code> exists as a function and <code>value:is_sqib_seq()</code> returns true, <code>value</code> is used directly.</li>
+<li>If <code>value.to_sqib_seq</code> exists as a function, the result of <code>value:to_sqib_seq()</code> is used.
+
+<ul>
+<li>If the value <code>seq</code> returned by <code>value:to_sqib_seq()</code> is not a table, or <code>seq.is_sqib_seq</code> is not a function,
+or <code>seq:is_sqib_seq()</code> does not return true, an error is raised.</li>
+</ul>
+</li>
+<li>Otherwise, if <code>value.n</code> exists as a number, the result of <a href="index.html#from_packed">Sqib.from_packed</a>(value) is used.</li>
+<li>Otherwise, the result of <a href="index.html#from_array">Sqib.from_array</a>(value) is used.</li>
+</ul>
+</li>
+<li>If <code>value</code> is a function, the result of <a href="index.html#from_yielder">Sqib.from_yielder</a>(value) is used.</li>
+<li>Otherwise, an error is raised.</li>
+</ul>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">value</span>
+         A source of sequence data to be used as a sequence.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A <a href="index.html#Sqib.Seq">Sqib.Seq</a> obtained by automatically converting <code>value</code>.
+    </ol>
+
+    <h3>Raises:</h3>
+    <ul>
+<li>When <code>value</code> has no automatic conversion to a sequence.</li>
+<li>When <code>value.to_sqib_seq</code> is a function but <code>value:to_sqib_seq()</code> returns a value that does not appear to be a
+sequence (i.e., does not pass the <code>is_sqib_seq()</code> test).</li>
+</ul>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#from_all">Sqib.from_all</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "from_all"></a>
+    <strong>from_all (...)</strong>
+    </dt>
+    <dd>
+    Produces a <a href="index.html#Sqib.Seq">Sqib.Seq</a> by converting each parameter to a <a href="index.html#Sqib.Seq">Sqib.Seq</a> and concatenating the results.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         Sequence-like values to be converted to sequences (using the same rules as <a href="index.html#from">Sqib.from</a>) and concatenated.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A <a href="index.html#Sqib.Seq">Sqib.Seq</a> obtained by automatically converting every parameter to a <a href="index.html#Sqib.Seq">Sqib.Seq</a>, then concatenating the
+ results.
+    </ol>
+
+    <h3>Raises:</h3>
+    <ul>
+<li>When any parameter has no automatic conversion to a sequence.</li>
+<li>When, for any parameter <code>v</code>, <code>v.to_sqib_seq</code> is a function but <code>v:to_sqib_seq()</code> returns a value that does not
+appear to be a sequence (i.e., does not pass the <code>is_sqib_seq()</code> test).</li>
+</ul>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#from">Sqib.from</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "from_array"></a>
+    <strong>from_array (a[, n])</strong>
+    </dt>
+    <dd>
+    Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on an array or its first elements.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         An array on which to base the new sequence.
+        </li>
+        <li><span class="parameter">n</span>
+         The number of elements to include from <code>a</code>. If omitted, the length is recomputed from <code>#a</code> at the
+ beginning of each new iteration.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of the first <code>n</code> elements of <code>a</code>, or, if <code>n</code> is omitted, the first <code>#a</code> elements of
+ <code>a</code>.
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#from_array_slice">Sqib.from_array_slice</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "from_array_slice"></a>
+    <strong>from_array_slice (a, start, limit)</strong>
+    </dt>
+    <dd>
+    Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the elements of a subsequence of an array between two specified indexes.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         An array on which to base the new sequence.
+        </li>
+        <li><span class="parameter">start</span>
+         The inclusive index of <code>a</code> at which to start the sequence. Must be an integer, but need not be positive.
+        </li>
+        <li><span class="parameter">limit</span>
+         The inclusive index of <code>a</code> at which to end the sequence. Must be an integer, but need not be positive.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of the elements of <code>a</code> from <code>a[start]</code> to <code>a[limit]</code>, inclusive, or an empty
+ sequence if <code>start</code> is greater than <code>limit</code>.
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#from_array">Sqib.from_array</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "from_iterate"></a>
+    <strong>from_iterate (iterate[, ...])</strong>
+    </dt>
+    <dd>
+    Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the supplied iterate function.</p>
+
+<p> The function <a href="index.html#Sqib.Seq:iterate">iterate</a> is expected to return an iterator function and optionally stateless iterator parameters.
+ <a href="index.html#Sqib.Seq:iterate">iterate</a> is used in a construction similar to <code>for _, v in iterate() do &hellip; end</code> and has a similar contract to the
+ built-in <code>ipairs()</code> or <code>pairs()</code> functions.</p>
+
+<p> The iteration is expected to produce each successive element of the represented sequence by returning either:</p>
+
+<ul>
+<li>a pair <code>x, v</code>, where <code>x</code> is any non-<code>nil</code> value and <code>v</code> is the next element value, or</li>
+<li><code>nil</code>, signaling the end of the sequence.</li>
+</ul>
+
+
+<p> The index values produced by the iterator need not be in any particular order; the requirement is only that each
+ index value be non-<code>nil</code> if a value is being returned or <code>nil</code> once the sequence is exhausted. The sequence returned
+ from this method discards the indexes from the iterator and provides its own indexes that comply with the contract of
+ <a href="index.html#Sqib.Seq:iterate">iterate</a>.</p>
+
+<pre><code>function example_iterate(start, limit)
+  local i = start - 1
+
+  return function()
+    if i &lt; limit then
+      i = i + 1
+      return true, i
+    end
+  end
+end
+
+local seq = Sqib.from_iterate(example_iterate, 10, 13)
+-- sequence is 10, 11, 12, 13
+</code></pre>
+
+<p> [Implementation detail: The number of parameters in <code>&hellip;</code> is subject to the same limitations as <a href="index.html#Sqib.Seq:unpack">unpack</a>.]
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">iterate</span>
+         A function which returns an iterator function.
+        </li>
+        <li><span class="parameter">...</span>
+         Parameters that will be passed to <a href="index.html#Sqib.Seq:iterate">iterate</a> at the beginning of each new iteration.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the abstract sequence traversed by <a href="index.html#Sqib.Seq:iterate">iterate</a>, with renumbered indexes.
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#from_yielder">Sqib.from_yielder</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "from_keys"></a>
+    <strong>from_keys (t)</strong>
+    </dt>
+    <dd>
+    Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the keys of a table.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t</span>
+         A table whose keys to traverse.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new <a href="index.html#Sqib.Seq">Sqib.Seq</a> representing the keys of <code>t</code>, in no particular order.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "from_packed"></a>
+    <strong>from_packed (t)</strong>
+    </dt>
+    <dd>
+    Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on a packed list.</p>
+
+<p> For the purposes of this method, a packed list is a table <code>t</code> which has a field <code>t.n</code> that is a nonnegative integer
+ and which has elements <code>t[1]</code> through <code>t[t.n]</code> (any or all of which may be <code>nil</code>) that constitute a conceptual list.
+ This method produces a <a href="index.html#Sqib.Seq">Sqib.Seq</a> representing this list.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t</span>
+         A packed list.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the elements of the packed list <code>t</code>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "from_pairs"></a>
+    <strong>from_pairs (t[, result_selector])</strong>
+    </dt>
+    <dd>
+    Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the key-value pairs of a table.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t</span>
+         A table whose key-value pairs to traverse.
+        </li>
+        <li><span class="parameter">result_selector</span>
+         A function <code>(k, v)</code> that selects the output element based on each key-value pair. If
+ omitted, the selector produces a two-element array <code>{k, v}</code> containing the key and the value.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new <a href="index.html#Sqib.Seq">Sqib.Seq</a> representing the key-value pairs of <code>t</code>, in no particular order.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "from_values"></a>
+    <strong>from_values (t)</strong>
+    </dt>
+    <dd>
+    Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the values of a table.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t</span>
+         A table whose values to traverse.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new <a href="index.html#Sqib.Seq">Sqib.Seq</a> representing the values of <code>t</code>, in no particular order.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "from_yielder"></a>
+    <strong>from_yielder (yielder[, ...])</strong>
+    </dt>
+    <dd>
+    Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the supplied yielder function.</p>
+
+<p> The function <code>yielder</code> is expected to call <code>coroutine.yield(v)</code> once for each successive value <code>v</code> in the iteration.
+ <code>yielder</code> is called from a coroutine using the supplied parameters, if any, at the beginning of each new iteration.</p>
+
+<pre><code>function example_yielder(start, limit)
+  for i = start, limit do
+    for j = start, limit do
+      coroutine.yield("(" .. i .. "," .. j .. ")")
+    end
+  end
+end
+
+local seq = Sqib.from_yielder(example_yielder, 1, 2)
+-- seq is "(1,1)", "(1,2)", "(2,1)", "(2,2)"
+</code></pre>
+
+<p> [Implementation detail: The number of parameters in <code>&hellip;</code> is subject to the same limitations as <a href="index.html#Sqib.Seq:unpack">unpack</a>.]
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">yielder</span>
+         A function which returns an iterator function.
+        </li>
+        <li><span class="parameter">...</span>
+         Parameters that will be passed to <a href="index.html#Sqib.Seq:iterate">iterate</a> at the beginning of each new iteration.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the abstract sequence traversed by <a href="index.html#Sqib.Seq:iterate">iterate</a>, with renumbered indexes.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "over"></a>
+    <strong>over (...)</strong>
+    </dt>
+    <dd>
+    Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> over the supplied sequence of parameters.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         Elements to be traversed by the new sequence.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the values of <code>&hellip;</code>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "range"></a>
+    <strong>range (start_value, limit_value[, step=1])</strong>
+    </dt>
+    <dd>
+    <p>Returns a new <a href="index.html#Sqib.Seq">Sqib.Seq</a> over the specified range.</p>
+
+<p> The sequence produced is the same sequence produced by the <code>for</code> loop</p>
+
+<pre><code> for i=start_value, limit_value, step do ... end
+</code></pre>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">start_value</span>
+         The initial value of the range.
+        </li>
+        <li><span class="parameter">limit_value</span>
+         The limit for the final value of the range.
+        </li>
+        <li><span class="parameter">step</span>
+         The step value for iteration.
+         (<em>default</em> 1)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new <a href="index.html#Sqib.Seq">Sqib.Seq</a> with contents based on the specified range.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "times"></a>
+    <strong>times (value, count)</strong>
+    </dt>
+    <dd>
+    Returns a new <a href="index.html#Sqib.Seq">Sqib.Seq</a> that repeats a specified value a specified number of times.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">value</span>
+         The element value to be repeated.
+        </li>
+        <li><span class="parameter">count</span>
+         The number of times to repeat <code>value</code>.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of <code>value</code> repeated <a href="index.html#Sqib.Seq:count">count</a> times.
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Class_Sqib_Seq"></a>Class Sqib.Seq </h2>
+
+          <div class="section-description">
+          The abstract base class for Sqib sequences.</p>
+
+<p> Derived classes must implement <a href="index.html#Sqib.Seq:iterate">Sqib.Seq:iterate</a>. If a derived class can determine its own size in less-than-linear
+ time, it should also override <a href="index.html#Sqib.Seq:count">Sqib.Seq:count</a>.
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "Sqib.Seq:all"></a>
+    <strong>Sqib.Seq:all (predicate)</strong>
+    </dt>
+    <dd>
+    Returns whether all elements of this sequence satisfy a predicate.</p>
+
+<p> If this sequence is empty, returns <code>true</code>.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">predicate</span>
+         A function <code>(v, i)</code> that returns true if the current element satisfies a condition or false
+ otherwise.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <code>true</code> if all elements of this sequence satisfy <code>predicate</code>, or <code>false</code> otherwise.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:any"></a>
+    <strong>Sqib.Seq:any ([predicate])</strong>
+    </dt>
+    <dd>
+    Returns whether this sequence contains any elements or contains any elements that satisfy a predicate.</p>
+
+<p> If this sequence is empty, returns <code>false</code>.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">predicate</span>
+         A function <code>(v, i)</code> that returns true if the current element satisfies a condition or false
+ otherwise.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        If <code>predicate</code> is supplied, <code>true</code> if any element in this sequence satisfies <code>predicate</code>, or <code>false</code>
+ otherwise. If <code>predicate</code> is omitted, <code>true</code> if this sequence contains any elements, or <code>false</code> otherwise.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:append"></a>
+    <strong>Sqib.Seq:append (...)</strong>
+    </dt>
+    <dd>
+    Produces a <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of this sequence followed by the specified elements.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         Elements to append to this sequence.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of the elements of this sequence followed by the specified additional elements.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:batch"></a>
+    <strong>Sqib.Seq:batch (block_size[, result_selector])</strong>
+    </dt>
+    <dd>
+    <p>Produces a <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of this sequence&rsquo;s elements as blocks of a specified number of elements each.</p>
+
+<p> Each block before the final block contains exactly <code>block_size</code> elements. The final block contains the remainder of
+ the sequence, which is as few as one element or as many as <code>block_size</code> elements. No block will ever contain zero
+ elements.</p>
+
+<p> By default, the resulting sequence will produce each block as a packed list. If another form is more useful, specify
+ a <code>result_selector</code> that accepts an array and size and produces the desired element.</p>
+
+<pre><code>-- Example: Produces each block as a new Sqib.Seq
+local seq_of_seq = seq:batch(block_size, function(a, n) return Sqib.from_array(a, n) end)
+</code></pre>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">block_size</span>
+         The number of elements to include in each block. Must be a positive integer.
+        </li>
+        <li><span class="parameter">result_selector</span>
+         A function <code>(a, n)</code> to be applied to each block before it is returned from the iterator,
+ where <code>a</code> is an array containing the elements of the block and <code>n</code> is the number of elements in the block. If
+ omitted, the result selector defaults to returning a packed list (i.e. by setting <code>a.n</code> to <code>n</code> and returning <code>a</code>).
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A <a href="index.html#Sqib.Seq">Sqib.Seq</a> that iterates over this sequence <code>block_size</code> elements at a time.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:call"></a>
+    <strong>Sqib.Seq:call (f[, ...])</strong>
+    </dt>
+    <dd>
+    <p>Calls the specified function as if it were a method on this sequence.</p>
+
+<p> This is a simple way to call custom sequence operations fluently without assigning them directly to to <a href="index.html#Sqib.Seq">Sqib.Seq</a>
+ table.</p>
+
+<pre><code>function my_every_n(seq, n)
+  return seq:filter(function(_,i) return i % n == 0 end)
+end
+
+-- Use call
+local seq = Sqib.over(1,2,3,4,5,6,7,8,9,10)
+  :call(my_every_n, 3)
+-- seq is now the sequence 3, 6, 9
+</code></pre>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">f</span>
+         A function to call as if it were a method.
+        </li>
+        <li><span class="parameter">...</span>
+         Additional parameters for <code>f</code>.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        The result of calling <code>f(self, &hellip;)</code>, where <code>self</code> is this sequence.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:concat"></a>
+    <strong>Sqib.Seq:concat (...)</strong>
+    </dt>
+    <dd>
+    Returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of this sequence followed by the specified additional sequences.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         Sequence-like values to be converted to sequences (using the same rules as <a href="index.html#from">Sqib.from</a>) and concatenated
+ to this sequence.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of the elements of this sequence followed by the elements of each of the specified
+ additional sequences.
+    </ol>
+
+    <h3>Raises:</h3>
+    <ul>
+<li>When any parameter has no automatic conversion to a sequence.</li>
+<li>When, for any parameter <code>v</code>, <code>v:to_sqib_seq()</code> is found but returns a value that does not appear to be a sequence
+(i.e., does not pass the <code>is_sqib_seq()</code> test).</li>
+</ul>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#from">Sqib.from</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:copy_into_array"></a>
+    <strong>Sqib.Seq:copy_into_array (a[, start_index=1])</strong>
+    </dt>
+    <dd>
+    Copies all elements of this sequence into an existing array or object.</p>
+
+<p> The first element of this sequence is copied to <code>a[start_index]</code>, the second to <code>a[start_index + 1]</code>, and so on. Any
+ values already in these positions are overwritten.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         An array or array-like object into which elements will be copied.
+        </li>
+        <li><span class="parameter">start_index</span>
+         The first index of <code>a</code> to use for copying elements. If provided, this must be an integer.
+ The value need not be positive (the caveats of using non-1-based arrays in Lua are well documented elsewhere).
+         (<em>default</em> 1)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        The number of elements copied. (The copied elements are <code>a[start_index]</code> through <code>a[start_index - 1 + &lt;number
+ of elements copied&gt;]</code>.)
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:count"></a>
+    <strong>Sqib.Seq:count ([predicate])</strong>
+    </dt>
+    <dd>
+    Counts the number of elements, or the number of elements that satisfy a predicate, in this sequence.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">predicate</span>
+         A function <code>(v, i)</code> that returns true if the current element satisfies a condition or false
+ otherwise. If omitted, all elements are counted.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        The total number of elements (if <code>predicate</code> is omitted) or the number of elements that satisfy <code>predicate</code>
+ (if <code>predicate</code> is supplied) in this sequence.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:filter"></a>
+    <strong>Sqib.Seq:filter (predicate)</strong>
+    </dt>
+    <dd>
+    Filters this sequence to only the elements that satisfy a predicate.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">predicate</span>
+         A function <code>(v, i)</code> that returns true if the current element satisfies a condition or false
+ otherwise.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of the elements of this sequence that satisfy <code>predicate</code>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:flat_map"></a>
+    <strong>Sqib.Seq:flat_map ([selector[, convert_result=true]])</strong>
+    </dt>
+    <dd>
+    Maps this sequence by applying a sequence-producing selector, then returns a sequence from the concatenated results.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">selector</span>
+         A sequence-returning function <code>(v, i)</code> to apply to each element in the sequence. If omitted, the
+ selector returns the element value.
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">convert_result</span>
+         Indicates whether the value returned from the selector should be converted into a
+ <a href="index.html#Sqib.Seq">Sqib.Seq</a> using <a href="index.html#from">Sqib.from</a>, which allows the operation to flatten certain other non-<a href="index.html#Sqib.Seq">Sqib.Seq</a> sequences. Set to
+ <code>false</code> if the selector always produces a <a href="index.html#Sqib.Seq">Sqib.Seq</a> and doesn&rsquo;t need the additional conversion.
+         (<em>default</em> true)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of the concatenated elements of the sequences returned by <code>selector</code> as applied
+ to each element from this sequence.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:force"></a>
+    <strong>Sqib.Seq:force ()</strong>
+    </dt>
+    <dd>
+    Forces immediate evaluation of this sequence.</p>
+
+<p> This method iterates this sequence completely, making an immutable copy, and returns a <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on the copy.</p>
+
+<p> The main effects of using the returned <a href="index.html#Sqib.Seq">Sqib.Seq</a> in place of the original sequence are:</p>
+
+<ul>
+<li>The resulting sequence itself doesn&rsquo;t need to perform any non-trivial computations. Any (potentially intensive)
+computation specified before the force only happens once.</li>
+<li>The resulting sequence will not vary between iterations, even if
+
+<ul>
+<li>this source sequence is mutable (such as an array passed to <a href="index.html#from">Sqib.from</a>, if anything other than the sequence
+still has a reference to it)</li>
+<li>this source sequence is based on computations which use variables that are themselves mutable</li>
+</ul>
+</li>
+<li>The resulting sequence generally occupies more memory.</li>
+</ul>
+
+
+<p> The effect of conversions such as <a href="index.html#Sqib.Seq:to_array">Sqib.Seq:to_array</a> or <a href="index.html#Sqib.Seq:pack">Sqib.Seq:pack</a> is similar, except that those methods do
+ not directly produce a <a href="index.html#Sqib.Seq">Sqib.Seq</a> while this method does not produce an object which can be accessed as a table.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new <a href="index.html#Sqib.Seq">Sqib.Seq</a> based on an immutable copy of the values from an immediate, full iteration of this
+ <a href="index.html#Sqib.Seq">Sqib.Seq</a>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:is_sqib_seq"></a>
+    <strong>Sqib.Seq:is_sqib_seq ()</strong>
+    </dt>
+    <dd>
+    Returns whether this object should be treated as <a href="index.html#Sqib.Seq">Sqib.Seq</a>.</p>
+
+<p> A function named <a href="index.html#Sqib.Seq:is_sqib_seq">is_sqib_seq</a> on any object is assumed (e.g. by <a href="index.html#from">Sqib.from</a>) to return true if the object is a
+ <a href="index.html#Sqib.Seq">Sqib.Seq</a> (or close enough to one that it can be treated as one). This method exists for the purpose of identifying
+ an object as a <a href="index.html#Sqib.Seq">Sqib.Seq</a> in absence of any reliable way to do so in Lua.</p>
+
+<p> The <a href="index.html#Sqib.Seq:is_sqib_seq">is_sqib_seq</a> method of <a href="index.html#Sqib.Seq">Sqib.Seq</a> is specified to always return <code>true</code>. This should not be overridden by
+ derived types of <a href="index.html#Sqib.Seq">Sqib.Seq</a>.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <code>true</code>.
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="index.html#Sqib.Seq:to_sqib_seq">Sqib.Seq:to_sqib_seq</a></li>
+         <li><a href="index.html#from">Sqib.from</a></li>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:iterate"></a>
+    <strong>Sqib.Seq:iterate ()</strong>
+    </dt>
+    <dd>
+    Returns a closure-based iterator over this sequence.</p>
+
+<p> Each time the returned iterator is called, it returns a pair of values <code>i, v</code> (an index and a value, respectively)
+ that represent each successive element from the sequence, until the sequence is exhausted, at which point <code>i</code> will be
+ <code>nil</code>.</p>
+
+<p> The index <code>i</code> is defined to start at 1 and increase by 1 with each new element.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A closure-based (non-stateless) iterator over this sequence.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:map"></a>
+    <strong>Sqib.Seq:map (selector)</strong>
+    </dt>
+    <dd>
+    Maps each element of this sequence by applying a selector.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">selector</span>
+         A function <code>(v, i)</code> to apply to each element in the sequence.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of the results of applying <code>selector</code> to each element of this sequence.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:new"></a>
+    <strong>Sqib.Seq:new ([o={}])</strong>
+    </dt>
+    <dd>
+    The constructor for an abstract <a href="index.html#Sqib.Seq">Sqib.Seq</a>.</p>
+
+<p> The implementation of this method does nothing beyond creating the object and setting the type&rsquo;s index and the
+ instance&rsquo;s metatable.</p>
+
+<p> See the functions of <a href="index.html#">Sqib</a> (for example, <a href="index.html#from">Sqib.from</a>) for simple ways to create <a href="index.html#Sqib.Seq">Sqib.Seq</a> objects from actual
+ data.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">o</span>
+         A table to convert into this type.
+         (<em>default</em> {})
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <code>o</code>, having been converted to this type.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:pack"></a>
+    <strong>Sqib.Seq:pack ()</strong>
+    </dt>
+    <dd>
+    Copies this sequence into a new packed list.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new table containing the elements of this sequence, with a field <code>n</code> containing the length of the list.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:pairs_to_hash"></a>
+    <strong>Sqib.Seq:pairs_to_hash (pair_selector)</strong>
+    </dt>
+    <dd>
+    Creates a new dictionary-style table using the provided selector to determine each key-value pair.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">pair_selector</span>
+         Function <code>(v, i)</code> that returns <code>k, v</code>, the key and value for a pair.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        The newly created table.
+    </ol>
+
+    <h3>Raises:</h3>
+    <ul>
+<li>When <code>pair_selector</code> is not provided.</li>
+<li>When any key appears more than once.</li>
+</ul>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#Sqib.Seq:to_hash">Sqib.Seq:to_hash</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:reversed"></a>
+    <strong>Sqib.Seq:reversed ()</strong>
+    </dt>
+    <dd>
+    Returns a new <a href="index.html#Sqib.Seq">Sqib.Seq</a> that consists of the elements of this sequence in reverse order.</p>
+
+<p> The reverse operation itself is deferred and occurs whenever the returned <a href="index.html#Sqib.Seq">Sqib.Seq</a> is actually iterated. When an
+ iterator is retrieved, the entire contents of the source sequence are copied into an internal table. The resulting
+ element values are iterated in reverse order.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A <a href="index.html#Sqib.Seq">Sqib.Seq</a> representing a copy of this sequence whose elements have been reversed.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:skip"></a>
+    <strong>Sqib.Seq:skip (count)</strong>
+    </dt>
+    <dd>
+    Skips a specified number of elements, then produces the remainder.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">count</span>
+         A number of elements to skip. If this is zero or less, the result is the entire sequence. If this is the
+ length of the sequence or greater, the result is empty.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of the elements of this sequence after the first <a href="index.html#Sqib.Seq:count">count</a> elements have been skipped.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:skip_while"></a>
+    <strong>Sqib.Seq:skip_while (predicate)</strong>
+    </dt>
+    <dd>
+    Skips all elements while a predicate is satisfied, then produces the remainder.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">predicate</span>
+         A function <code>(v, i)</code> to test elements. Elements are skipped until the first element for which this
+ returns false; the remaining elements are passed through untested.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of all elements of this sequence including and after the first element for which the
+ predicate returns false.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:sorted"></a>
+    <strong>Sqib.Seq:sorted (...)</strong>
+    </dt>
+    <dd>
+    Returns a new <a href="index.html#Sqib.Seq">Sqib.Seq</a> that consists of the elements of this sequence sorted according to the specified
+ options.</p>
+
+<p> With no options specified, the call</p>
+
+<pre><code> local result = seq:sorted()
+</code></pre>
+
+<p> is equivalent to</p>
+
+<pre><code> local result = seq:sorted({
+   by = function(v) return v end,
+   compare = function(a, b) return (a &lt; b) and -1 or (a &gt; b) and 1 or 0 end,
+   ascending = true,
+   stable = false,
+   })
+</code></pre>
+
+<p> Otherwise, one or more orderings can be specified, each with its own full set of parameters. If two elements are
+ tied according to the first ordering, then the second ordering is tried and so on until the tie is broken.</p>
+
+<pre><code>-- Example of sorting first by one field, then another, then another
+-- (stable = true in any of the orderings causes the entire sort to be stable)
+local result = seq:sorted(
+  { by = function(v) return v.primary_field end, stable = true },
+  { by = function(v) return v.secondary_field end, ascending = false },
+  { by = function(v) return v.tertiary_field end, compare = some_compare_function }
+  )
+</code></pre>
+
+<p> If all comparisons tie for two elements and <code>stable</code> is true for any of the orderings, then the element that
+ occurred earlier in the input sequence will appear earlier in the output as well. If all comparisons tie for two
+ elements and <code>stable</code> is <em>not</em> true for any of the orderings, the elements may appear in either order.</p>
+
+<p> The sort operation itself is deferred and occurs at the beginning of each new iteration. All elements of this
+ sequence are iterated at once, copied internally, and sorted, then this sorted copy is iterated.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+        <p> Ordering specifications to be applied in order while comparing elements; each parameter is a table that
+ may define any of the following:</p>
+
+<ul>
+<li><code>by</code>: A function <code>(v)</code> that returns a value that will be the subject of the sort. If omitted, the sort will be
+performed on the value itself.</li>
+<li><code>compare</code>: A ternary compare function <code>(a, b)</code> that returns a negative number if <code>a</code> comes before <code>b</code>, a positive
+number if <code>a</code> comes after <code>b</code>, or 0 if <code>a</code> and <code>b</code> are tied. As a backward compatibility measure, if this method
+returns a non-number value, such as <code>true</code> or <code>false</code>, it will be treated as an ordinary Lua comparer (returns
+truthy if <code>a</code> comes before <code>b</code> or falsy otherwise), but if <code>stable</code> is set to true or if multiple orderings are
+specified, then the comparer may need to be called twice (once in each order) to determine whether two elements are
+tied. If omitted, the comparison is equivalent to the expression <code>(a &lt; b) and -1 or (a &gt; b) and 1 or 0</code>.</li>
+<li><code>ascending</code>: If true, the elements are arranged in ascending order. If false, the elements are arranged in
+descending order. If omitted, defaults to true.</li>
+<li><code>stable</code>: If true, the sort is stable; that is, any two elements that are tied will be sorted in the same order
+in which they appear in the input. If false, the sort is not guaranteed to be stable. If omitted, defaults to
+false. If multiple orderings are specified and at least one specifies <code>stable</code> as true, the entire result will be
+stable.</li>
+</ul>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A <a href="index.html#Sqib.Seq">Sqib.Seq</a> representing a copy of this sequence whose elements have been sorted as specified.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:take"></a>
+    <strong>Sqib.Seq:take (count)</strong>
+    </dt>
+    <dd>
+    Passes a specified number of elements, then ends the sequence.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">count</span>
+         A number of elements to take. If this is zero or less, the result is empty. If this is the length of the
+ sequence or greater, the result is the entire sequence.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of the first <a href="index.html#Sqib.Seq:count">count</a> elements of this sequence.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:take_while"></a>
+    <strong>Sqib.Seq:take_while (predicate)</strong>
+    </dt>
+    <dd>
+    Passes all elements while a predicate is satisfied, then ends the sequence.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">predicate</span>
+         A function <code>(v, i)</code> to test elements. Elements are passed until the first element for which this
+ returns <code>false</code>; the remaining elements are ignored.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of all elements of this sequence before, but not including, the first element for
+ which the predicate returns false.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:times"></a>
+    <strong>Sqib.Seq:times (count)</strong>
+    </dt>
+    <dd>
+    Returns a new <a href="index.html#Sqib.Seq">Sqib.Seq</a> that repeats this entire sequence a specified number of times.</p>
+
+<p> Note that a new iteration of this sequence is started for every repetition. This may include reevaluating sequence
+ contents, filters, mappings, orderings, and so forth each time. If this isn&rsquo;t what you intended, use e.g. <a href="index.html#Sqib.Seq:force">force</a> to
+ fully evaluate the sequence once before using this method.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">count</span>
+         The number of times to repeat this sequence.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of the elements of this sequence repeated <a href="index.html#Sqib.Seq:count">count</a> times.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:to_array"></a>
+    <strong>Sqib.Seq:to_array ([include_length=false])</strong>
+    </dt>
+    <dd>
+    Copies this sequence into a new array.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">include_length</span>
+         If true, this method returns the new array <em>and</em> the number of elements; otherwise,
+ this method returns only the array.
+         (<em>default</em> false)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <code>a, n</code>, if <code>include_length</code>, or <code>a</code>, otherwise, where <code>a</code> is the new array and <code>n</code> is the number of elements
+ copied.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:to_hash"></a>
+    <strong>Sqib.Seq:to_hash ([key_selector[, value_selector]])</strong>
+    </dt>
+    <dd>
+    Creates a new dictionary-style table using the provided selectors to determine the keys and values.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">key_selector</span>
+         Function <code>(v, i)</code> that selects the key for an item. If omitted, the value is selected.
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">value_selector</span>
+         Function <code>(v, i)</code> that selects the value for an item. If omitted, the value is selected.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        The newly created table.
+    </ol>
+
+    <h3>Raises:</h3>
+    When any key appears more than once.
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#Sqib.Seq:pairs_to_hash">Sqib.Seq:pairs_to_hash</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:to_sqib_seq"></a>
+    <strong>Sqib.Seq:to_sqib_seq ()</strong>
+    </dt>
+    <dd>
+    Returns this <a href="index.html#Sqib.Seq">Sqib.Seq</a> object.</p>
+
+<p> A method named <a href="index.html#Sqib.Seq:to_sqib_seq">to_sqib_seq</a> on any object is assumed (e.g. by <a href="index.html#from">from</a>) to return a Sqib sequence equivalent to the
+ object.</p>
+
+<p> The <a href="index.html#Sqib.Seq:to_sqib_seq">to_sqib_seq</a> method of <a href="index.html#Sqib.Seq">Sqib.Seq</a> is specified to always return the implied <code>self</code> parameter. This should not
+ be overridden by derived types of <a href="index.html#Sqib.Seq">Sqib.Seq</a>.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <code>self</code> (the object on which this method was called).
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="index.html#Sqib.Seq:is_sqib_seq">is_sqib_seq</a></li>
+         <li><a href="index.html#from">Sqib.from</a></li>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:unique"></a>
+    <strong>Sqib.Seq:unique ([key_selector])</strong>
+    </dt>
+    <dd>
+    Filters this sequence to distinct elements by including only the first element having a selected key.</p>
+
+<p> This implementation is table-based; a table is used to keep track of the keys of already seen items.</p>
+
+<p> Any two elements are considered distinct if their keys do not refer to the same item when used to index a table; that
+ is, for <code>a</code> and <code>b</code>, for some table <code>seen</code>, <code>seen[key_selector(a)]</code> and <code>seen[key_selector(b)]</code> don&rsquo;t refer to the
+ same item.</p>
+
+<p> A special case is implemented so that <code>nil</code> can be used as a key.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">key_selector</span>
+         A function <code>(v, i)</code> that selects a key by which to determine uniqueness. If this is omitted,
+ the key selector returns the value itself as a key.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A <a href="index.html#Sqib.Seq">Sqib.Seq</a> consisting of each element of this sequence for which the selected key has not already
+ appeared.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sqib.Seq:unpack"></a>
+    <strong>Sqib.Seq:unpack ()</strong>
+    </dt>
+    <dd>
+    Returns this entire sequence as a return value list.</p>
+
+<p> Similarly to the built-in <a href="index.html#Sqib.Seq:unpack">unpack</a>, this method produces the values from a sequence in a form suitable for multiple
+ assignment or for appending to an array or parameter list.</p>
+
+<pre><code>local seq = Sqib.over(10, 20, 30)
+local q, r, s = seq:unpack()  -- like q = 10, r = 20, s = 30
+local a = {seq:unpack()}      -- like a = {10, 20, 30}
+local a2 = {0, seq:unpack()}  -- like a = {0, 10, 20, 30}
+print("values", seq:unpack()) -- like print("values", 10, 20, 30)
+</code></pre>
+
+<p> [Implementation detail: This implementation may cause a stack overflow condition for a very large number of
+ elements (as determined during testing, a little over a million; may vary by target environment). The
+ implementation of this method relies on a recursive function call that Lua 5.1 seems unable to tail-call optimize.
+ The depth of the call stack is directly proportional to the number of elements.]
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        All elements of this sequence in order.
+    </ol>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2020-08-09 12:21:46 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
