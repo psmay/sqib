@@ -1,3 +1,8 @@
+- title: "Github repository"
+  url: "https://github.com/psmay/sqib/"
+  tab: true
+
 - title: "API Documentation"
   url: "doc/index.html"
   tab: true
+
