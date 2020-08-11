@@ -40,7 +40,7 @@ Synopsis
     -- Apply operations fluently
     local result_seq = seq
       :map(function(n) return n / 2 end)
-      :filter(function(n) return n % 2 != 0 end)
+      :filter(function(n) return n % 2 ~= 0 end)
 
     -- Get the result as an array
     local result_array = result_seq:to_array()
@@ -74,7 +74,7 @@ You might use this library if you want to do functional things with sequences an
 *   Functional considerations
     *   **You believe nil is a real value.** Iteration over a sequence won't accidentally stop if it hits a `nil` element.
         *   (Due the implementation of the Lua's unary `#` operator, trailing `nil`s from an array are dropped if no explicit length is specified. To work around this, specify a length parameter on `from_array()` or set the `n` field to the length to make the array a packed list.)
-    *   **You want to do things with sequences descriptively, without worrying about the details.** In many cases, activities such as mapping, filtering, and sorting are easier to understand, less verbose, and just less hairy with this module than the equivalent `for` loop.
+    *   **You want to do things with sequences declaratively, without worrying about the details.** In many cases, activities such as mapping, filtering, and sorting are easier to understand, less verbose, and just less hairy with this module than the equivalent `for` loop.
     *   **You don't want to modify the original.** As a rule, operations on sequences don't mutate their source.
     *   **You value deferred rather than instant execution.** In general, a sequence object returned by a method on another sequence object generally won't iterate over and process its source until it is iterated itself. (`force()` is an intentional exception.) Even operations that require a copy of the entire sequence (such as `sorted()` and `reversed()`) aren't actually copied until requested for iteration.
     *   **You want to apply extremely flexible sorting.** The `sorted()` method directly supports selector functions (i.e. "sort by" behavior), compare functions, optional descending order, and optional stable sorting. Additional orderings can be specified (i.e. "then by" behavior) to break ties, each with their own parameters. And the original sequence is not modified in place.
