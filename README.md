@@ -40,7 +40,7 @@ Synopsis
     -- Apply operations fluently
     local result_seq = seq
       :map(function(n) return n / 2 end)
-      :filter(function(n) return n % 2 != 0 end)
+      :filter(function(n) return n % 2 ~= 0 end)
 
     -- Get the result as an array
     local result_array = result_seq:to_array()
@@ -56,7 +56,7 @@ Synopsis
     -- Do a bunch of the above without intermediate variables
     local result_packed = Sqib.over(2, 4, 6, 8, 10, 12)
       :map(function(n) return n / 2 end)
-      :filter(function(n) return n % 2 end)
+      :filter(function(n) return n % 2 ~= 0 end)
       :pack()
 ```
 
